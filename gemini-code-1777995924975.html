@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>หัตถเวชศาสตร์ — สูตรนวดแผนไทย</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=Chakra+Petch:wght@400;600&display=swap');
+    
+    :root {
+      /* Dark Mode Variables */
+      --bg-main: #121a16;         /* พื้นหลังหลัก */
+      --bg-card: #1b2620;         /* พื้นหลังการ์ดและแถบต่างๆ */
+      --bg-card-hover: #23332a;   /* พื้นหลังตอนโฮเวอร์ */
+      --bg-input: #17201b;        /* พื้นหลังช่องค้นหา */
+      
+      --border-color: #2d3b33;    /* สีเส้นขอบ */
+      --border-active: #4ade80;   /* สีเส้นขอบเมื่อถูกเลือก */
+      
+      --text-main: #e2e8f0;       /* สีตัวอักษรหลัก (สว่าง) */
+      --text-muted: #94a3b8;      /* สีตัวอักษรรอง (หม่น) */
+      
+      --accent-green: #4ade80;    /* สีเขียวเด่น */
+      --accent-green-dim: rgba(74, 222, 128, 0.15); /* สีเขียวโปร่งแสง */
+      --accent-green-text: #bbf7d0;
+      
+      --danger-red: #ef4444;      /* สีแดงแจ้งเตือน */
+      --danger-red-dim: rgba(239, 68, 68, 0.15);
+      --danger-red-text: #fecaca;
+      
+      --warning-yellow: #fbbf24;  /* สีเหลือง */
+      
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .app { font-family: 'Sarabun', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; }
+    
+    .header { background: #0b120e; color: var(--text-main); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
+    .header-icon { width: 40px; height: 40px; background: var(--bg-card-hover); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .header h1 { font-family: 'Chakra Petch', sans-serif; font-size: 16px; font-weight: 600; color: var(--accent-green); }
+    .header p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    
+    .search-bar { padding: 0.75rem 1rem; background: var(--bg-main); border-bottom: 1px solid var(--border-color); }
+    .search-bar input { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); font-family: 'Sarabun', sans-serif; font-size: 13px; background: var(--bg-input); color: var(--text-main); outline: none; transition: border-color 0.2s; }
+    .search-bar input:focus { border-color: var(--accent-green); }
+    .search-bar input::placeholder { color: #475569; }
+    
+    .nav-tabs { background: var(--bg-main); border-bottom: 1px solid var(--border-color); display: flex; overflow-x: auto; padding: 0 0.75rem; gap: 0; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .nav-tab { padding: 0.75rem 0.875rem; font-size: 13px; font-weight: 500; color: var(--text-muted); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; font-family: 'Sarabun', sans-serif; }
+    .nav-tab:hover { color: var(--text-main); }
+    .nav-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); font-weight: 600; }
+    
+    .content { padding: 1rem; }
+    .disease-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 0.5rem; }
+    .disease-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1rem 0.625rem; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .disease-card:hover { border-color: var(--accent-green); background: var(--bg-card-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .disease-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+    .disease-name { font-size: 13px; font-weight: 500; color: var(--text-main); line-height: 1.4; }
+    .disease-tag { font-size: 11px; color: var(--accent-green); margin-top: 6px; background: var(--accent-green-dim); padding: 3px 8px; border-radius: 12px; display: inline-block; }
+    
+    .detail-panel { background: var(--bg-main); overflow: hidden; }
+    .detail-header { background: #0b120e; padding: 1rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); }
+    .detail-header .back-btn { background: var(--bg-card-hover); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: var(--border-radius-md); cursor: pointer; font-size: 13px; font-family: 'Sarabun', sans-serif; transition: background 0.2s; }
+    .detail-header .back-btn:hover { background: var(--border-color); }
+    .detail-header h2 { font-size: 16px; font-weight: 600; font-family: 'Chakra Petch', sans-serif; color: var(--accent-green); }
+    
+    .section-tabs { display: flex; border-bottom: 1px solid var(--border-color); background: var(--bg-main); padding: 0 0.75rem; overflow-x: auto; scrollbar-width: none; }
+    .section-tabs::-webkit-scrollbar { display: none; }
+    .section-tab { padding: 0.75rem; font-size: 13px; font-weight: 500; color: var(--text-muted); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; font-family: 'Sarabun', sans-serif; transition: color 0.2s; }
+    .section-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); font-weight: 600; }
+    
+    .detail-content { padding: 1.25rem 1rem; }
+    .info-block { margin-bottom: 1.25rem; padding: 1rem; background: var(--bg-card); border-radius: var(--border-radius-md); border-left: 3px solid var(--accent-green); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .info-block h3 { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; letter-spacing: 0.3px; }
+    .info-block p, .info-block li { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+    .info-block ul { padding-left: 1.5rem; }
+    
+    .formula-step { display: flex; gap: 12px; padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); margin-bottom: 8px; background: var(--bg-card); transition: border-color 0.2s; }
+    .formula-step:hover { border-color: #3f5247; }
+    .step-num { width: 26px; height: 26px; background: var(--accent-green); border-radius: 50%; color: #000; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .step-detail { flex: 1; }
+    .step-title { font-size: 14px; font-weight: 500; color: var(--text-main); line-height: 1.5; }
+    .step-note { font-size: 12px; color: var(--warning-yellow); margin-top: 4px; font-style: italic; }
+    
+    .exam-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-muted); }
+    .exam-item:last-child { border-bottom: none; }
+    .exam-num { color: var(--accent-green); font-weight: 600; font-size: 13px; min-width: 20px; }
+    
+    .tips-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .tip-card { padding: 0.875rem; border-radius: var(--border-radius-md); font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+    .tip-do { background: var(--accent-green-dim); border-left: 3px solid var(--accent-green); color: var(--accent-green-text); }
+    .tip-dont { background: var(--danger-red-dim); border-left: 3px solid var(--danger-red); color: var(--danger-red-text); }
+    
+    .hidden { display: none !important; }
+    .no-result { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 14px; }
+    .cat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 0.75rem; padding: 0 0.25rem; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <div class="header">
+      <div class="header-icon">🌿</div>
+      <div>
+        <h1>หัตถเวชศาสตร์ — สูตรนวดแผนไทย</h1>
+        <p>แพทย์แผนไทยประยุกต์ · คู่มือสำหรับนักศึกษา</p>
+      </div>
+    </div>
+
+    <div id="list-view">
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="ค้นหาโรค เช่น ตะคริว, ปวดหลัง, อัมพาต..." oninput="onSearch(this.value)">
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="filterCat('all',this)">ทั้งหมด</button>
+        <button class="nav-tab" onclick="filterCat('กล้ามเนื้อ/ข้อ',this)">กล้ามเนื้อ/ข้อ</button>
+        <button class="nav-tab" onclick="filterCat('ระบบประสาท',this)">ระบบประสาท</button>
+        <button class="nav-tab" onclick="filterCat('ลมปะกัง/ลปค.',this)">ลปค./ลมปะกัง</button>
+        <button class="nav-tab" onclick="filterCat('สตรี',this)">สตรี</button>
+      </div>
+      <div class="content">
+        <div id="cat-label" class="cat-label"></div>
+        <div class="disease-grid" id="disease-grid"></div>
+        <div id="no-result" class="no-result hidden">ไม่พบโรคที่ค้นหา</div>
+      </div>
+    </div>
+
+    <div id="detail-view" class="hidden">
+      <div class="detail-header">
+        <button class="back-btn" onclick="showList()">← กลับ</button>
+        <span id="detail-icon" style="font-size:22px;"></span>
+        <h2 id="detail-title"></h2>
+      </div>
+      <div class="section-tabs">
+        <button class="section-tab active" id="tab-overview" onclick="showSection('overview',this)">ภาพรวม</button>
+        <button class="section-tab" id="tab-exam" onclick="showSection('exam',this)">การตรวจ</button>
+        <button class="section-tab" id="tab-formula" onclick="showSection('formula',this)">สูตรนวด</button>
+        <button class="section-tab" id="tab-tips" onclick="showSection('tips',this)">คำแนะนำ</button>
+      </div>
+      <div class="detail-content">
+        <div id="section-overview"></div>
+        <div id="section-exam" class="hidden"></div>
+        <div id="section-formula" class="hidden"></div>
+        <div id="section-tips" class="hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ข้อมูลโรค (ใช้ข้อมูลเดิมทั้งหมด)
+  const diseases = [
+    { id:'cramp_calf', name:'ตะคริวน่อง', icon:'⚡', cat:'กล้ามเนื้อ/ข้อ', cause:'กล้ามเนื้อน่องหดเกร็ง', symptoms:['ปวดเกร็งน่อง'], exam:['ดูเย็นร้อนอ่อนแข็ง','เหยียดปลายเท้า กระดกส้นเท้าขึ้นลง','กดจุดเจ็บ'], formula:[ {s:'พื้นฐานขา เน้นข้อเท้า เปิดประตูลม'}, {s:'พื้นฐานสัญญาณ 1-5 ขาด้านนอก'}, {s:'พื้นฐานสัญญาณ 1-5 ขาด้านใน'}, {s:'นวดแนวเส้นกึ่งกลาง'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า เย็น','รับประทานอาหารที่มีแมกนีเซียม เช่น กล้วยน้ำว้า นม ส้ม','ทำบริหาร เช่น ยืดกล้ามเนื้อน่อง กระดกปลายเท้าขึ้นลง'], donts:[] },
+    { id:'patella', name:'สะบ้าลอย', icon:'🦵', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ กีฬา', symptoms:['ปวดบวม','สะบ้าหลวม'], exam:['ดู','วัด','พับ','โก่ง'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'สัญญาณเข่า'}, {s:'ผลักกระดูกสะบ้าเข่า'}, {s:'นวดสัญญาณ 4 และสัญญาณ 1-5 ขาใน'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า เย็น','งดอาหารแสลง','งดบิดดัดสลัดขา','พักการใช้ข้อเข่า','กระดกเท้าขึ้นลง'], donts:[] },
+    { id:'shoulder_blade', name:'สะบักจม', icon:'💪', cat:'กล้ามเนื้อ/ข้อ', cause:'กล้ามเนื้อสะบักตึง', symptoms:['ปวดสะบัก','เคลื่อนไหวลำบาก'], exam:['ดูจุดกดเจ็บ บวมแดงร้อน','คลำแนวกระดูกสันหลัง adam forward','คลำกล้ามเนื้อสะบัก','วัดองศากมเงย หูชิดไหล่'], formula:[ {s:'พื้นฐานบ่า ขอบปกสะบักบน'}, {s:'สัญญาณ 4,5 หลัง (ด้านบน ล่าง) สะบักด้านใน'}, {s:'สัญญาณ 4 ไหล่'}, {s:'พื้นฐานหลัง'}, {s:'พื้นฐานแขนในและแขนด้านนอก'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง','งดบิดดัดสลัดคอ','ห้ามนอนทับไหล่ข้างที่เจ็บ','ทำบริหาร ดึงแขนเท้าแขน 3 จังหวะ'], donts:[] },
+    { id:'frozen_shoulder', name:'ไหล่ติด', icon:'🔒', cat:'กล้ามเนื้อ/ข้อ', cause:'การอักเสบของข้อไหล่', symptoms:['ยกแขนไม่ขึ้น','ปวดเจ็บเสียวหัวไหล่ไปแขน ขึ้นศีรษะ','กล้ามเนื้อบ่าข้างที่เป็นเกร็งตึง','องศาการเคลื่อนไหวของข้อไหล่ในมุมต่างๆ ถูกจำกัด'], exam:['ดูลักษณะทั่วไป','ชูแขนชิดหู 2 ข้าง','เท้าเอว','มือไพล่หลัง','เขยื้อนหัวไหล่','บิดแขนเข้าออก เข้าหน้า ออกหลัง'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 1-5 ไหล่ เน้น 1, 5'}, {s:'พื้นฐานหลัง'}, {s:'พื้นฐานแขนด้านนอก'}, {s:'พื้นฐานแขนด้านใน'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง เช่น ข้าวเหนียว หน่อไม้ เครื่องในสัตว์ เหล้าเบียร์ ยาแก้ปวด','ทำกายบริหาร ดึงแขนเท้าแขน 3 จังหวะ','งดบิดดัดสลัดแขน'], donts:[] },
+    { id:'elbow_lpc', name:'ลปค. ข้อศอก', icon:'💢', cat:'กล้ามเนื้อ/ข้อ', cause:'ลมปราบคาบ บริเวณข้อศอก', symptoms:['ปวดที่ข้อศอกร้าวไปที่หัวไหล่และปวดร้าวชาลงไปที่แขน ข้อมือ','นิ้วมือเวลากำมือ บิดมือ คว่ำมือจะเจ็บที่ข้อศอก'], exam:['ดูบวม แดง','กระดกมือ','ทดสอบกำลังมือ','ดูองศาข้อศอก','บิดแขนเข้า ออก'], formula:[ {s:'พื้นฐานแขนด้านใน'}, {s:'สัญญาณ 1-5 แขนด้านใน เน้น 2,3'}, {s:'พื้นฐานแขนนอก'}, {s:'สัญญาณ 1-5 แขนนอก เน้น 3,4'}, {s:'เขยื้อนข้อศอก'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร ดึงแขนเท้าแขน 3 จังหวะ','งดบิดดัดสลัดแขน ห้ามนอนทับข้อศอก ห้ามหิ้วของหนัก','นวดสัปดาห์ละ 2 ครั้ง'], donts:[] },
+    { id:'wrist_lpc', name:'ลปค. ข้อมือ', icon:'🖐', cat:'กล้ามเนื้อ/ข้อ', cause:'ลมปราบคาบ บริเวณข้อมือ', symptoms:['ปวด ตึง และร้าวชาบริเวณข้อมือ ฝ่ามือ นิ้ว','นิ้วมือไม่มีกำลัง','อาจปวดบวมบริเวณฝ่ามือและนิ้วมือร่วมด้วย'], exam:['ดูบวม แดง','กระดกมือ','ทดสอบกำลังมือ'], formula:[ {s:'พื้นฐานแขนด้านใน'}, {s:'สัญญาณ 1-5 แขนด้านใน เน้น 4,5'}, {s:'นวดแยกข้อมือ'}, {s:'พื้นฐานแขนด้านนอก'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง เช่น ข้าวเหนียว หน่อไม้ เครื่องในสัตว์ เหล้าเบียร์ ยาแก้ปวด','ทำกายบริหาร ดึงแขนเท้าแขน 3 จังหวะ กำมือแบมือ','งดบิดดัดสลัดแขน ไม่นอนทับมือข้างที่เป็น','นวดสัปดาห์ละ 2 ครั้ง'], donts:['มีการอักเสบรุนแรงไม่ควรนวด'] },
+    { id:'finger_lpc', name:'ลปค. นิ้วมือ', icon:'☝️', cat:'กล้ามเนื้อ/ข้อ', cause:'ลมปราบคาบ นิ้วมือ', symptoms:['เริ่มปวดบริเวณฝ่ามือ โดยเฉพาะโคนข้อนิ้ว','มีเสียง ฝืดขยับไม่ได้','มักเป็นตอนเช้า'], exam:['ดูบวม แดง','กระดกมือ','ทดสอบกำลังมือ'], formula:[ {s:'พื้นฐานแขนด้านใน'}, {s:'สัญญาณ 1-5 แขนด้านในและแยกข้อมือ'}, {s:'นวดรอบจุดกดเจ็บ'}, {s:'พื้นฐานแขนด้านนอก'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร ดึงแขนเท้าแขน 3 จังหวะ กำมือแบมือ','งดบิดดัดสลัดแขน ไม่นอนทับมือข้างที่เป็น','นวดสัปดาห์ละ 2 ครั้ง'], donts:[] },
+    { id:'wrist_drop', name:'สันนิบาตข้อมือตก', icon:'⬇️', cat:'กล้ามเนื้อ/ข้อ', cause:'เส้นประสาทข้อมือเสียหาย', symptoms:['ข้อมือตก กระดกขึ้นไม่ได้','นิ้วมือไม่มีกำลัง'], exam:['ดูเย็นร้อนอ่อนแข็ง','กระดกข้อมือขึ้นลง','ทดสอบกำลังนิ้ว'], formula:[ {s:'พื้นฐาน สัญญาณ 1-5 แขนด้านใน เน้น 2,4'}, {s:'นวดสัญญาณแยกข้อมือ ใจกลางฝ่ามือ และ 5 จุดข้อนิ้วมือ'}, {s:'พื้นฐานสัญญาณ 1-5 แขนนอก'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า เย็น','งดอาหารแสลง','ทำบริหาร ดึงแขนเท้าแขน กำมือและเหยียดนิ้ว','ห้ามบิดดัด สลัดนิ้วมือและมือ','นัดทำการรักษาสัปดาห์ละ 1 ครั้ง'], donts:[] },
+    { id:'foot_drop', name:'สันนิบาตตีนตก', icon:'🦶', cat:'กล้ามเนื้อ/ข้อ', cause:'เส้นประสาทเสียหาย', symptoms:['เท้าตก กระดกขึ้นไม่ได้','ข้างที่เป็นจะเย็นกว่าปกติ','ส้นเท้าข้างที่เป็นจะยาว'], exam:['ดูลักษณะทั่วไป','คลำเย็นร้อนอ่อนแข็ง ข้างที่เป็นจะเย็นกว่าปกติ','วัดส้นเท้า ข้างที่เป็นจะยาว','กระดิกนิ้วเท้า กระดกข้อเท้าขึ้นลงดูองศา','ทดสอบแรงถีบเท้า'], formula:[ {s:'พื้นฐานขา เน้นข้อเท้า เปิดประตูลม'}, {s:'สัญญาณ 1,2,3 หลัง'}, {s:'สัญญาณ 1-5 ขาด้านนอก เน้น 2,5'}, {s:'สัญญาณ 1-5 ขาด้านใน เน้น 2,5'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า เย็น','งดอาหารแสลง','ทำบริหาร เช่น เขยงปลายเท้า กระดกเท้าขึ้นลง','ห้ามบิดดัด สลัดขาและข้อเท้า','นัดทำการรักษาสัปดาห์ละ 1 ครั้ง'], donts:[] },
+    { id:'finger_sprain', name:'นิ้วมือแพลง/สน', icon:'🤚', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ ข้อนิ้วผิดรูป', symptoms:['ปวด บวม แดง เขียว','ข้อนิ้วผิดรูป'], exam:['ดูปวด บวม แดง ร้อน','คลำจุดเจ็บ','กำ เหยียดนิ้ว','ทดสอบกำลังนิ้ว'], formula:[ {s:'นวดพื้นฐานแขนด้านใน'}, {s:'สัญญาณ 1-5 แขนด้านใน เน้น 4,5'}, {s:'นวดข้อมือและใจกลางฝ่ามือ'}, {s:'นวดนิ้วและจัดกระดูก'}, {s:'นวดพื้นฐานแขนด้านนอก'}, {s:'สัญญาณ 2-5 แขนด้านนอก เน้น 5'} ], tips:['ประคบร้อนชื้น หรือเย็น (ถ้าเขียวช้ำ 24 ชั่วโมงแรก ประคบเย็น)','งดอาหารแสลง','พักการใช้งานนิ้ว','นวดวันเว้นวัน ถ้า 1 สัปดาห์','นวดสัปดาห์ละ 2 ครั้ง ถ้า 1 เดือน'], donts:['ถ้าเจ็บมาก มีอาการชา อาจเป็นผลจากการระคายเคืองปลายประสาท'] },
+    { id:'toe_sprain', name:'นิ้วเท้าแพลง/สน', icon:'🦶', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ', symptoms:['ปวด บวม แดง'], exam:['ดูปวด บวม แดง ร้อน','คลำจุดเจ็บ','งุ้ม กระดกนิ้ว','วัดองศา ทดสอบแรงถีบเท้า'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'เน้นข้อเท้า'}, {s:'นวดรอบจุดกดเจ็บ'}, {s:'แบะ หอ ดัน จัดกระดูก'}, {s:'สัญญาณ 1-5 ขาด้านใน เน้น 5 ไล่ลงตาตุ่ม'}, {s:'สัญญาณ 1-4 ขาด้านใน เน้น 5 เดินเส้นตาตุ่ม'}, {s:'เรียกกำลังข้อเท้า'} ], tips:['ประคบร้อนชื้น หรือเย็น (ถ้าเขียวช้ำ 24 ชั่วโมงแรก ประคบเย็น)','งดอาหารแสลง','พักการใช้งานนิ้ว งดบิดดัด สลัดเท้า','นวดวันเว้นวัน ถ้า 1 สัปดาห์','บริหาร ทางุ้มนิ้วเท้า'], donts:[] },
+    { id:'heel_lpc', name:'ลปค. ส้นเท้า', icon:'👣', cat:'กล้ามเนื้อ/ข้อ', cause:'ลมปราบคาบบริเวณส้นเท้า', symptoms:['ปวดบริเวณส้นเท้าลามไปจนถึงฝ่าเท้าแบบจี๊ดๆ','โดยเฉพาะก้าวแรกหลังตื่นนอนหรือหลังนั่งพักนานๆ แล้วอาการจะทุเลาลง'], exam:['ดูปวด บวม แดง ร้อน','คลำจุดเจ็บ','วัดส้นเท้า จะยาว กระดกเท้าขึ้นลง','ทดสอบกำลังเท้า'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'เน้นข้อเท้า 3 ครั้ง'}, {s:'พื้นฐานขาด้านนอก 1 รอบ'}, {s:'สัญญาณ 1-5 ขาด้านนอก เน้น 5 เดินเส้นลงตาตุ่ม 2 รอบ'}, {s:'นวดส้นเท้าด้านนอก 2 รอบ'}, {s:'เดินร่องเอ็นร้อยหวายด้านนอก 2 รอบ'}, {s:'พื้นฐานขาด้านใน'}, {s:'สัญญาณ 1-5 ขาด้านใน เน้น 2-5 / 2 รอบ'}, {s:'นวดส้นเท้าด้านใน 2 รอบ'}, {s:'นวดร่องเอ็นร้อยหวายด้านใน 2 รอบ'} ], tips:['ประคบร้อนชื้น หรือเย็น (ถ้าเขียวช้ำ 24 ชั่วโมงแรก ประคบเย็น)','งดอาหารแสลง','ทำบริหาร เขยงปลายเท้าขึ้นลง','นวดสัปดาห์ละ 2 ครั้ง'], donts:[] },
+    { id:'knee_water', name:'ลมจับโปงน้ำเข่า', icon:'💧', cat:'กล้ามเนื้อ/ข้อ', cause:'น้ำ: ปวด บวม แดง ร้อน / แห้ง: มีเสียงกรอบแกรบ เข่าติด', symptoms:['น้ำ: ปวด บวม แดง ร้อน เข่า','แห้ง: มีเสียงกรอบแกรบ เข่าติด ขาโก่ง นั่งยองๆ ไม่ได้','เปลี่ยนท่าจะปวดมาก'], exam:['คลำดูปวด บวม แดง ร้อน','งอพับดูองศาเข่า','คลำลูกสะบ้า','ดูความโก่ง','วัดส้นเท้าข้างที่เป็นจะสั้น','ทาปูนจะเยิ้มๆ'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'สัญญาณ 1-3 เข่า'}, {s:'สัญญาณ 1-4 ขาด้านนอก เน้น 4 แล้วเขยื้อนข้อเข่า'}, {s:'สัญญาณ 1-4 ขาด้านใน เน้น 3,4 แล้วเขยื้อนข้อเข่า'}, {s:'ทายาพอก (แห้งจะไม่ทา)', note:'แห้งไม่ทายา'} ], tips:['ประคบร้อนชื้น เช้า เย็น 10-15 นาที','งดอาหารแสลง','ทำบริหาร นั่งยองๆ 90 องศา 10-15 วินาที 3 set','งดบิดดัดสลัดขาข้างที่เป็น'], donts:[] },
+    { id:'ankle_water', name:'ลมจับโปงน้ำข้อเท้า', icon:'🦵', cat:'กล้ามเนื้อ/ข้อ', cause:'น้ำ: มีน้ำในข้อ / แห้ง: ขยับมีเสียง', symptoms:['น้ำ: ปวด บวม แดง ร้อน มีน้ำในข้อ','แห้ง: ขยับมีเสียง'], exam:['คลำดูปวด บวม แดง ร้อน','ส้นเท้าข้างที่เป็นจะยาว','กระดกท่าขึ้นลง','ทดสอบกำลังข้อเท้า','ทาปูนจะเยิ้มๆ'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'เน้นข้อเท้า'}, {s:'สัญญาณ 1-5 ขานอก เน้น 5'}, {s:'สัญญาณ 1-5 ขาใน เน้น 5'}, {s:'นวดรอบจุดเจ็บ'} ], tips:['ประคบร้อนชื้น เช้า เย็น 10-15 นาที','งดอาหารแสลง','ทำบริหาร เขยงเท้าข้างที่เป็น 10-15 วินาที 3 set','งดบิดดัดสลัดเท้าที่เป็น'], donts:[] },
+    { id:'ankle_sprain1', name:'ข้อเท้าแพลง ระดับ 1', icon:'🩹', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ เดินพลาด', symptoms:['ปวด บวม แดง','ส้นเท้าข้างที่เป็นส่วนใหญ่จะยาว'], exam:['ดูปวด บวม แดง','คลำเจ็บ','วัดส้นเท้าข้างที่เป็น','วัดองศากระดกเท้าขึ้น ลง','ทดสอบกำลังเท้า'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'เน้นข้อเท้า'}, {s:'สัญญาณ 1-5 ขานอก เน้น 5'}, {s:'สัญญาณ 1-5 ขาใน เน้น 5'} ], tips:['ประคบร้อนชื้น เช้า เย็น 10-15 นาที','งดอาหารแสลง','ทำบริหาร เขยงเท้าข้างที่เป็น 10-15 วินาที 3 set นั่งยอง 90 องศา','งดบิดดัดสลัดเท้าที่เป็น ห้ามเดินมาก พักการใช้ข้อเท้า','หลีกเลี่ยงพฤติกรรมให้เกิดโรค','นวดรักษาครั้งเดียว ถ้าไม่หายนวดวันเว้นวัน'], donts:[] },
+    { id:'ankle_sprain2_side', name:'ข้อเท้าแพลง ระดับ 2 ด้านข้าง', icon:'🩹', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ บิดเท้า', symptoms:['ปวด บวม ด้านข้างข้อเท้า'], exam:['ดูปวด บวม แดง','คลำเจ็บ','วัดองศา ทดสอบกำลัง'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'ผลักกระดูกเคลื่อนให้เข้ากัน'}, {s:'สัญญาณ 1-5 ขานอก เดินเส้นถึงตาตุ่ม'}, {s:'สัญญาณ 1-5 ขาใน เดินเส้นลงตาตุ่ม เน้น 5'} ], tips:['ประคบร้อนชื้น เช้า เย็น','งดอาหารแสลง','พักการใช้ข้อเท้า','งดบิดดัดสลัดเท้า'], donts:[] },
+    { id:'ankle_sprain2_front', name:'ข้อเท้าแพลง ระดับ 2 ด้านหน้า', icon:'🩹', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ', symptoms:['ปวด บวม ด้านหน้าข้อเท้า'], exam:['ดูปวด บวม แดง','คลำเจ็บ','วัดองศา ทดสอบกำลัง'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'ผลักกระดูกเคลื่อนให้เข้ากัน'}, {s:'สัญญาณ 1-5 ขานอก เดินเส้นถึงตาตุ่ม'}, {s:'สัญญาณ 1-5 ขาใน เดินเส้นลงตาตุ่ม เน้น 5'} ], tips:['ประคบร้อนชื้น เช้า เย็น','งดอาหารแสลง','พักการใช้ข้อเท้า','งดบิดดัดสลัดเท้า'], donts:[] },
+    { id:'hip_displace', name:'ข้อสะโพกเบี่ยง', icon:'🦴', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ ล้ม', symptoms:['ปวดขัดในสะโพก เดินไม่ถนัด','อาจมีร้าวชาปวดก้นน้อยลงขา'], exam:['วัดส้นเท้าข้างที่เป็นจะสั้น','กอดเข่าชิดอกไม่ได้','สัญญาณ 3 ขานอกแข็ง','งอพับขาองศาเข่าไม่ได้กดไม่ต้านมือ'], formula:[ {s:'พื้นฐานขา เปิดประตูลม ข้างที่เป็น'}, {s:'นวดสัญญาณ 1,2,3 ขาด้านนอก เน้นสัญญาณ 3 พร้อมผลักเขยื้อนสะโพก'}, {s:'นวดสัญญาณ 1,2 ขาด้านใน'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า-เย็น','งดอาหารแสลง','กายบริหาร นั่งยองๆ เขยงปลายเท้า (ช่วงใหม่ๆ ห้ามทำจนกว่าจะกอดเข่าชิดอกได้)','งดบิดดัดสลัดขา','ระวังการก้าวที่สูง'], donts:[] },
+    { id:'knee_displace', name:'หัวเข่าเบี่ยง', icon:'🦵', cat:'กล้ามเนื้อ/ข้อ', cause:'อุบัติเหตุ ลื่นล้ม ตกบันได', symptoms:['ปวดเข่าด้านใน ปวดตื้บๆ','งอชิดก้นไม่ได้ เหยียดขาไม่ตรง ขากะเผลก'], exam:['ดูลักษณะทั่วไปของขา เข่า บวม การเดิน จุดกดเจ็บ','วัดส้นเท้าข้างที่เป็นจะสั้น','งอขาชิดก้นไม่ได้'], formula:[ {s:'พื้นฐานขา เปิดประตูลม'}, {s:'นวดเข่า 3 จุด'}, {s:'ผลักกระดูกเข่าให้เข้าที่'}, {s:'นวดสัญญาณ 1-4 ขาด้านนอก เน้น 4 และใต้ข้อพับ'}, {s:'นวดสัญญาณ 1-4 ขาด้านใน เน้น 3,4'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า-เย็น','งดอาหารแสลง','กายบริหาร เช่น นั่งยองๆ เขยงปลายเท้า','งดบิดดัดสลัดขา','ห้ามเดินมาก พักผ่อน'], donts:[] },
+    { id:'backpain', name:'ยอกหลัง', icon:'🔙', cat:'กล้ามเนื้อ/ข้อ', cause:'กล้ามเนื้อหลังอักเสบ', symptoms:['ปวดหลัง เดินลำบาก'], exam:['สังเกตลักษณะท่าเดิน','นั่งขัดสมาธิชูแขน ไอ','กดจุดเจ็บ แถวสัญญาณ 3 (ใช้นิ้วชี้กด)','คลำเย็นร้อนอ่อนแข็ง'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'พื้นฐานสัญญาณ 1-3 หลัง เน้น 3'}, {s:'พื้นฐานสัญญาณ 1-3 ขาด้านนอก เน้น 2'}, {s:'พื้นฐานสัญญาณ 1,2 ขาด้านใน เน้น 1'}, {s:'แหวกนาบ สัญญาณ 1-5 ท้อง เน้น 3 (ขวา), 4 (ซ้าย)'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง','งดบิดดัดสลัดขา','ปรับพฤติกรรม งดยืนนานๆ พักทุกครึ่งชั่วโมง','ทำบริหาร เขยงปลายเท้าข้างที่เป็น นั่งยองๆ'], donts:[] },
+    { id:'lpc_back1', name:'ลปค. สัญญาณ 1 หลัง', icon:'🔴', cat:'ลมปะกัง/ลปค.', cause:'ลมปราบคาบ บริเวณสัญญาณ 1 หลัง', symptoms:['ปวดร้าวลงขา','ส้นเท้าข้างที่เป็นจะสั้น'], exam:['ดูแนวเส้นกระดูกสันหลัง เย็นร้อน กดเจ็บสัญญาณ 1','วัดส้นเท้าข้างที่เป็นจะสั้น','งอพับขา 90 องศาข้างที่เป็นจะต้านมือกดไม่ลง','ทาปูนแล้วเยิ้ม = โรคลมล้ำบ่อง, ทาแล้วแห้งเร็ว = โรคกระดูก, ทาแล้วแห้งสม่ำเสมอ = ลมปราบ'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'สัญญาณ 1-3 หลัง เน้น 1'}, {s:'สัญญาณ 1-3 ขานอก เน้น 3'}, {s:'สัญญาณ 1,2 ขาใน เน้น 2'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร เขยงเท้าข้างที่เป็น นั่ง 90 องศา','งดบิดดัดสลัดขา','นวดสัปดาห์ละ 2 ครั้ง (ลมล้ำบ่อง: นวดวันเว้นวัน)'], donts:[] },
+    { id:'lpc_back3', name:'ลปค. สัญญาณ 3 หลัง', icon:'🟠', cat:'ลมปะกัง/ลปค.', cause:'ลมปราบคาบ บริเวณสัญญาณ 3 หลัง', symptoms:['ปวดร้าวลงขา','ส้นเท้าข้างที่เป็นจะยาว'], exam:['ดูแนวเส้นกระดูกสันหลัง เย็นร้อน กดเจ็บสัญญาณ 3','วัดส้นเท้าข้างที่เป็นจะยาว','งอพับขา 90 องศาข้างที่เป็นจะกดลงพื้น'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'สัญญาณ 1-3 หลัง เน้น 3'}, {s:'สัญญาณ 1-3 ขาด้านนอก เน้น 2'}, {s:'สัญญาณ 1,2 ขาด้านใน เน้น 1'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร เขยงเท้าข้างที่เป็น นั่ง 90 องศา','งดบิดดัดสลัดขา','นวดสัปดาห์ละ 2 ครั้ง'], donts:[] },
+    { id:'lpc_back45', name:'ลปค. สัญญาณ 4-5 หลัง', icon:'🟡', cat:'ลมปะกัง/ลปค.', cause:'สัญญาณ 4 ร้าวลงแขน มือ / สัญญาณ 5 มีปวดร้าวขึ้น', symptoms:['ปวดบวม แดง ร้อน','ปวดร้าวลงแขนหรือร้าวขึ้น'], exam:['ดูปวด บวม แดง ร้อน','กม เงย เอียงหัวชิดไหล่','ดูโหนกแก้ม และคลำกล้ามเนื้อบ่า แนวกระดูกคอ'], formula:[ {s:'พื้นฐานบ่าจนนิ่ม (3 รอบ)'}, {s:'สัญญาณ 4,5 หลัง เน้น 4 (ถ้า 5 เน้น 5)'}, {s:'สัญญาณ 4 ไหล่ ข้างที่เป็น'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร ดึงแขนเท้าแขน 3 จังหวะ','งดบิดดัดสลัดคอ','นวดสัปดาห์ละ 2 ครั้ง'], donts:[] },
+    { id:'lpc_neck', name:'ลปค. โค้งคอ', icon:'🔵', cat:'ลมปะกัง/ลปค.', cause:'ลมปราบคาบ คอแข็งทรงศีรษะไม่อยู่', symptoms:['คอแข็ง ทรงศีรษะไม่อยู่','กล้ามเนื้อคอไม่มีกำลัง'], exam:['ดูแนว C7 สมดุลไหล่','หาตำแหน่งจุดกดเจ็บ referred pain แข็งลำ','กม เงย เอียงหัวชิดไหล่'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 4,5 หลัง'}, {s:'โค้งคอ'}, {s:'สัญญาณ 4 ไหล่'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร ดึงแขนเท้าแขน 3 จังหวะ','งดบิดดัดสลัดคอ นอนให้ตรง'], donts:[] },
+    { id:'neck_sprain', name:'คอตกหมอน', icon:'😴', cat:'ลมปะกัง/ลปค.', cause:'นอนผิดท่า (ถ้าเป็นบ่อย = กระดูกคอเสื่อม / ถ้าร้าวชา = หมอนรองกระดูกทับเส้นประสาท)', symptoms:['หันไปแล้วรู้สึกปวดร้าว','ถ้าเป็นบ่อยอาจเป็นกระดูกคอเสื่อม'], exam:['กม เงย หันซ้ายขวา','หาตำแหน่งจุดกดเจ็บ referred pain แข็งลำ'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 4,5 หลัง เน้น 4,5 บน'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','ทำกายบริหาร กม-เงย หันซ้าย-ขวา','งดบิดดัดสลัดคอ'], donts:[] },
+    { id:'migraine', name:'ลมปะกัง (ไมเกรน)', icon:'🧠', cat:'ลมปะกัง/ลปค.', cause:'ลมปะกังปวดศีรษะข้างเดียว', symptoms:['ปวดศีรษะ ปวดขมับ เบ้าตาหรือกระบอกตา','ปวดแบบตุบๆ ตื้อๆ เป็นข้างเดียว หรือสลับข้างกันในแต่ละครั้ง'], exam:['ซักประวัติ','ดูระดับกระดูก C7','กม เงย เอียงหูชิดไหล่','ดูคลำกล้ามเนื้อบ่า แข็งตึง','ถ้ามีไข้หรือ Hypertension ให้แก้ก่อน'], formula:[ {s:'พื้นฐานบ่า ข้างที่เป็น'}, {s:'บังคับสัญญาณ 5 หลัง ข้างที่เป็น'}, {s:'สัญญาณ 1,2,5 ศีรษะหลัง'}, {s:'สัญญาณ 4 ไหล่ ข้างที่เป็น'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','งดอาหารพวกเนยแข็ง ไอศกรีม กาแฟ เนื้อสัตว์แช่แข็ง ของเย็น','ทำทากายบริหาร ดึงแขนชูแขน 3 จังหวะ'], donts:[] },
+    { id:'migraine_vomit', name:'ลมปะกัง ชนิดอาเจียน', icon:'🤢', cat:'ลมปะกัง/ลปค.', cause:'ลมปะกังรุนแรง มีอาเจียนร่วมด้วย', symptoms:['ปวดศีรษะรุนแรง','คลื่นไส้ อาเจียน'], exam:['ซักประวัติ','ดูระดับกระดูก C7','คลำกล้ามเนื้อบ่า แข็งตึง'], formula:[ {s:'พื้นฐานบ่า 2 ข้าง'}, {s:'บังคับสัญญาณ 5 ข้างที่เป็น'}, {s:'พื้นฐานโค้งคอ 2 ข้าง'}, {s:'สัญญาณ 4 ไหล่ 2 ข้าง'}, {s:'สัญญาณศีรษะ 1-5 หลัง'}, {s:'จุดจอมประสาท'}, {s:'สัญญาณศีรษะ 1-5 หน้า'}, {s:'เปิดประตูลม'}, {s:'พื้นฐานหลัง'}, {s:'สัญญาณ 1,2,3 หลัง'}, {s:'สัญญาณ 1,2,3 ขานอก'}, {s:'สัญญาณ 1,2 ขาใน'}, {s:'แหวก นาบ สัญญาณท้อง'} ], tips:['ประคบร้อนชื้น เช้า-เย็น','งดอาหารแสลง','งดอาหารพวกเนยแข็ง ไอศกรีม กาแฟ เนื้อสัตว์แช่แข็ง ของเย็น','ทำทากายบริหาร ดึงแขนชูแขน 3 จังหวะ'], donts:[] },
+    { id:'tinnitus', name:'หูอื้อ', icon:'👂', cat:'ลมปะกัง/ลปค.', cause:'ลมในเส้นหู ความดัน', symptoms:['หูอื้อ ได้ยินไม่ชัด'], exam:['กมหน้า','เงยหน้า','ดูสัญญาณ 4,5 เย็น ร้อน อ่อน แข็ง','คลำหาจุดเจ็บ','เอียงหูชิดไหล่','ตรวจการได้ยิน'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 4,5 หลัง เน้น 4,5'}, {s:'นวดสัญญาณ 4 ไหล่'}, {s:'นวดสัญญาณ 1-5 หูข้างที่เป็น'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า เย็น','งดอาหารแสลง','ทำบริหาร เช่น ดึงแขนเท้าแขน','งดบิดดัดสลัดคอ'], donts:[] },
+    { id:'hemiplegia', name:'อัมพาตครึ่งซีก', icon:'🧍', cat:'ระบบประสาท', cause:'ลมเบื้องสูงและลมเบื้องต่ำพัดไม่สมดุล', symptoms:['มีอาการชา','อ่อนแรงครึ่งซีก'], exam:['วัดชีพจรสูงต่ำ','วัดส้นเท้า สั้น','กระดกข้อเท้า ขึ้น ลง','ทดสอบแรงถีบเท้า','ตั้งชันเข่า','กำมือ แบมือ','คว่ำมือ หงายมือ','ตั้งศอก','ชูแขนขึ้นเหนือศีรษะ','ทดสอบดึงแขน 3 จังหวะ'], formula:[ {s:'พื้นฐานขา เน้นข้อเท้า เปิดประตูลม'}, {s:'นวดพื้นฐานหลัง'}, {s:'พื้นฐานขาด้านนอก และสัญญาณ 1-5 (ระวังสัญญาณ 2)'}, {s:'พื้นฐานขาด้านใน และสัญญาณ 1-5'}, {s:'พื้นฐานแขนด้านใน และสัญญาณ 1-5'}, {s:'พื้นฐานแขนด้านนอก และสัญญาณ 1-5'}, {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 1-5 ไหล่'} ], tips:['ประคบน้ำร้อน งดอาหารแสลง เช่น ของหวานจัด มันจัด ของเย็น ของเค็ม','งดอาหารแสลง','ทำบริหาร เช่น ดึงแขน เท้าแขน นั่งยองๆ','พักผ่อนนอนหลับให้เพียงพอ','ห้ามนอนทับแขนข้างที่เป็น'], donts:[] },
+    { id:'paraplegia', name:'อัมพาตครึ่งท่อน', icon:'🦽', cat:'ระบบประสาท', cause:'ขา 2 ข้างไม่มีแรง', symptoms:['ขา 2 ข้างไม่มีแรง','อาจบวม ร้อน ลีบ'], exam:['วัดชีพจรสูงต่ำ','ดูสภาพทั่วไป บวม ร้อน ลีบ','วัดส้นเท้า สั้น','กระดกข้อเท้า ขึ้น ลง','ทดสอบแรงถีบเท้า','ทดสอบตั้งขา (ถ้าไม่ยก บีบนิ้วกลางตอบสนอง = เดินได้)'], formula:[ {s:'พื้นฐานขา เน้นข้อเท้า เปิดประตูลม'}, {s:'นวดพื้นฐานหลัง'}, {s:'พื้นฐานขาด้านนอก และสัญญาณ 1-5 (ระวังสัญญาณ 2)'}, {s:'พื้นฐานขาด้านใน และสัญญาณ 1-5'}, {s:'นวดท้อง แหวก นาบ'}, {s:'นวดสัญญาณ 1-5 ท้อง', note:'นวด 2 ข้าง'} ], tips:['ประคบร้อนชื้น 10-15 นาที เช้า เย็น','งดอาหารแสลง','ทำบริหาร ฝึกยืน หรือนั่งยองๆ'], donts:[] },
+    { id:'quadriplegia', name:'อัมพาตทั้งตัว', icon:'🛏', cat:'ระบบประสาท', cause:'เส้นประสาทเสียหายรุนแรง', symptoms:['ไม่มีแรงทั้งตัว'], exam:['วัดชีพจรสูงต่ำ','วัดส้นเท้า สั้น','กระดกข้อเท้า ขึ้น ลง','ทดสอบแรงถีบเท้า','ตั้งชันเข่า (ถ้าไม่ยก บีบนิ้วกลางตอบสนอง = เดินได้)','กำมือ แบมือ ทดสอบแรงบีบมือ','คว่ำมือ หงายมือ','ตั้งศอก','ชูแขนขึ้นเหนือศีรษะ','ทดสอบดึงแขน 3 จังหวะ'], formula:[ {s:'พื้นฐานขา เน้นข้อเท้า เปิดประตูลม'}, {s:'นวดพื้นฐานหลัง ทั้งตัว สัญญาณ 1-3 หลัง เน้นจุดโรค เฉพาะขา'}, {s:'พื้นฐานขาด้านนอก และสัญญาณ 1-5 (ระวังสัญญาณ 2) เฉพาะขา'}, {s:'พื้นฐานขาด้านใน และสัญญาณ 1-5 เฉพาะขา'}, {s:'พื้นฐานแขนด้านใน และสัญญาณ 1-5'}, {s:'พื้นฐานแขนด้านนอก และสัญญาณ 1-5'}, {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 1-5 ไหล่'}, {s:'นวดท้อง แหวก นาบ สัญญาณ 1-5 ท้อง'} ], tips:['งดอาหาร หวาน เย็น มัน เค็มจัด','พลิกตะแคงทุก 2 ชม.','ทำบริหาร กำแบมือ ทำ 3-5 ครั้ง เช้า เย็น'], donts:['ไม่ตอบสนอง → นวดวันละ 1 ครั้ง 3 วันติด','กระดิกนิ้วเท้า → นวดวันเว้นวัน','ช่วยตัวเองได้บ้าง → นวดสัปดาห์ละ 2 ครั้ง'] },
+    { id:'arm_palsy', name:'อัมพาตเฉพาะแขน', icon:'💪', cat:'ระบบประสาท', cause:'เส้นประสาทแขนเสียหาย', symptoms:['แขนไม่มีแรง'], exam:['วัดชีพจรสูงต่ำ','ดูเย็นร้อนอ่อนแข็งกล้ามเนื้อ','ตรวจกระดูกหัวไหล่','ทดสอบแรงบีบมือ','ตั้งชันเข่า','กำมือ แบมือ','คว่ำมือ หงายมือ','ตั้งศอก','ชูแขนขึ้นเหนือศีรษะ','ทดสอบดึงแขน 3 จังหวะ'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 4,5 หลัง'}, {s:'สัญญาณ 1-5 หัวไหล่ เน้น 1,5'}, {s:'พื้นฐาน สัญญาณ 1-5 แขนด้านใน สัญญาณแยกข้อมือ'}, {s:'พื้นฐาน สัญญาณ 1-5 แขนด้านนอก'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง และงดอาหารรสเย็น','ไม่นอนทับแขนข้างที่เป็น','พักผ่อนให้เพียงพอ','ทำบริหาร ดึงแขนเท้าแขน 3 จังหวะ'], donts:[] },
+    { id:'ptosis', name:'สันนิบาตหนังตาตก', icon:'👁', cat:'ระบบประสาท', cause:'มักเกิดจากเส้นประสาทคู่ 3', symptoms:['หนังตาตก','กล้ามเนื้อตาไม่มีกำลัง'], exam:['ดูลักษณะทั่วไป เช่น สีคล้ำ อาการบวม ยักคิ้ว','ทดสอบกำลังกล้ามเนื้อตา หลับตาลืมตาใช้นิ้วชี้แตะ'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 5 หลัง'}, {s:'โค้งคอ'}, {s:'สัญญาณ 4 ไหล่'}, {s:'สัญญาณ 1.5 ศีรษะหลัง (ขวา), 2,5 (ซ้าย)'}, {s:'จุดจอมประสาท'}, {s:'สัญญาณ 1 ศีรษะหน้า (ขวา), 2 (ซ้าย)'} ], tips:['ประคบน้ำอุ่น 10-15 นาที เช้า-เย็น','งดอาหารแสลง','พักผ่อนให้เพียงพอ','ทำบริหาร หลับตาลืมตา กลอกตา ยักคิ้ว','นวดสัปดาห์ละ 2 ครั้ง'], donts:['มีหนังตาตก + กล้ามเนื้อไม่มีกำลัง → นวดไม่ช่วย'] },
+    { id:'face_palsy', name:'อัมพาตใบหน้า', icon:'😶', cat:'ระบบประสาท', cause:'เส้นประสาทใบหน้าเสียหาย', symptoms:['ใบหน้าข้างหนึ่งอ่อนแรง ยิ้มไม่ได้ หลับตาไม่สนิท'], exam:['ดูลักษณะทั่วไป ให้ยักคิ้ว หมวดคิ้ว ยิ้ม อ้าปาก หลับตา','ทดสอบกำลังตา ใช้นิ้วชี้แตะ','ตรวจคลำกล้ามเนื้อบ่าและคอ'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 5 หลัง'}, {s:'สัญญาณ 1,5 ศีรษะหลัง (ขวา), 2,5 (ซ้าย)'}, {s:'จุดจอมประสาท'}, {s:'สัญญาณ 1 ศีรษะหน้า (ขวา), 2 (ซ้าย)'}, {s:'สัญญาณ 3 และสัญญาณแยก (ขวา), 4 (ซ้าย)'}, {s:'สัญญาณ 5 ศีรษะและสัญญาณแยก 3 ครั้ง 10 วิ'} ], tips:['ประคบน้ำอุ่น 10-15 นาที เช้า-เย็น','งดอาหารแสลง','หลีกเลี่ยงลมเย็น','ถ้าตาไม่ลงให้สวมแว่นตากันฝุ่น','เลี่ยงอาหารที่ต้องเคี้ยวนานๆ','ทำการรักษา 3 วันแรกต่อเนื่อง แล้วเว้น 5 วัน ต่อไปนวดสัปดาห์ละ 1 ครั้ง (เรื้อรัง: สัปดาห์ละ 2 ครั้ง)'], donts:[] },
+    { id:'parkinsons', name:'พาร์กินสัน', icon:'🧠', cat:'ระบบประสาท', cause:'เส้นประสาทเสื่อม', symptoms:['มือสั่น เคลื่อนไหวช้า'], exam:['ดูการเคลื่อนไหว','การตึงตัวกล้ามเนื้อ คอ','กมหน้า เงยหน้า เอียงคอชิดหู'], formula:[ {s:'พื้นฐานบ่า'}, {s:'สัญญาณ 4,5 หลัง'}, {s:'สัญญาณ 4 ไหล่'}, {s:'โค้งคอ'}, {s:'สัญญาณ 1-5 ศีรษะหลัง'}, {s:'จุดจอมประสาท'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง','กินอาหารบำรุงสมอง','ฝึกสมาธิ ฝึกออกสังคม และฝึกพูดคุย','ทำบริหาร ยืดเหยียดกล้ามเนื้อส่วนที่เป็น'], donts:[] },
+    { id:'uterus_prolapse', name:'มดลูกดำ', icon:'🌸', cat:'สตรี', cause:'ความเสื่อม กลั้นปัสสาวะ ทำงานหนัก', symptoms:['กลั้นปัสสาวะไม่อยู่','ปวดท้องน้อย'], exam:['วัดส้นเท้าข้างที่เป็นจะสั้น','งอพับเข่า กดต้านมือ','สัญญาณ 1,2 ท้องตึง'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'พื้นฐานสัญญาณ 1-3 หลัง เน้น 1'}, {s:'พื้นฐานสัญญาณ 1-3 ขาด้านนอก เน้น 3'}, {s:'พื้นฐานสัญญาณ 1-3 ขาด้านใน เน้น 2'}, {s:'แหวกนาบ'}, {s:'สัญญาณ 1,2 ท้อง ฝนมดลูก'}, {s:'สัญญาณ 5 ท้อง'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง','งดบิดดัดสลัดตัว','ห้ามยกของหนักเกินกำลัง','ทำบริหาร เช่น ขมิบก้น'], donts:[] },
+    { id:'uterus_tilt', name:'มดลูกตะแคง', icon:'🌸', cat:'สตรี', cause:'อุบัติเหตุ กระแทก', symptoms:['ปวดท้องน้อย สัญญาณเต้นเร็วเบา','มีร้อนบริเวณท้อง'], exam:['วัดส้นเท้าข้างที่เป็นจะสั้น','งอพับเข่า กดต้านมือ','สัญญาณ 1,2 ท้องตึง มีร้อน สัญญาณเต้นเร็วเบา'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'พื้นฐานสัญญาณ 1-3 หลัง เน้น 1'}, {s:'พื้นฐานสัญญาณ 1-3 ขาด้านนอก เน้น 3'}, {s:'พื้นฐานสัญญาณ 1-3 ขาด้านใน เน้น 2'}, {s:'แหวกนาบ'}, {s:'สัญญาณ 1,2 ท้อง ฝนมดลูก'}, {s:'สัญญาณ 5 ท้อง'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง เช่น น้ำมะพร้าวอ่อน หน่อไม้ ของหมักดอง','งดบิดดัดสลัดตัว','พักผ่อนให้เพียงพอ','ทำบริหาร เช่น ขมิบก้น'], donts:[] },
+    { id:'uterus_float', name:'มดลูกลอย', icon:'🌸', cat:'สตรี', cause:'ไม่อยู่ไฟ มดลูกไม่กลับเข้าอู', symptoms:['มดลูกไม่กลับเข้าที่','สัญญาณเต้นเร็วลึก'], exam:['วัดส้นเท้าข้างที่เป็นจะสั้น','สัญญาณ 1,2 ท้องตึง','ตรวจสัญญาณ 3 ขาด้านนอก มีความร้อน สัญญาณเต้นเร็วลึก'], formula:[ {s:'พื้นฐานขาเปิดประตูลม'}, {s:'พื้นฐานสัญญาณ 1-3 หลัง เน้น 1'}, {s:'พื้นฐานสัญญาณ 1-3 ขาด้านนอก เน้น 3'}, {s:'พื้นฐานสัญญาณ 1,2 ขาด้านใน เน้น 2'}, {s:'แหวกนาบ'}, {s:'สัญญาณ 1-3 ท้อง ฝนมดลูก'}, {s:'สัญญาณ 5 ท้อง'} ], tips:['ประคบร้อนชื้น','งดอาหารแสลง เช่น น้ำมะพร้าวอ่อน หน่อไม้ ของหมักดอง','งดบิดดัดสลัดตัว','พักผ่อนให้เพียงพอ','ทำบริหาร เช่น ขมิบก้น'], donts:[] }
+  ];
+
+  let currentCat = 'all';
+  let currentSearch = '';
+
+  function renderGrid() {
+    const grid = document.getElementById('disease-grid');
+    const noResult = document.getElementById('no-result');
+    const catLabel = document.getElementById('cat-label');
+    let list = diseases;
+    if (currentCat !== 'all') list = list.filter(d => d.cat === currentCat);
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      list = list.filter(d => d.name.toLowerCase().includes(q) || d.symptoms.join(' ').toLowerCase().includes(q));
+    }
+    if (list.length === 0) {
+      grid.innerHTML = '';
+      noResult.classList.remove('hidden');
+      catLabel.textContent = '';
+    } else {
+      noResult.classList.add('hidden');
+      catLabel.textContent = `แสดง ${list.length} โรค`;
+      grid.innerHTML = list.map(d => `
+        <div class="disease-card" onclick="showDetail('${d.id}')">
+          <span class="disease-icon">${d.icon}</span>
+          <div class="disease-name">${d.name}</div>
+          <div class="disease-tag">${d.cat}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  function filterCat(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid();
+  }
+
+  function onSearch(val) {
+    currentSearch = val;
+    renderGrid();
+  }
+
+  function showDetail(id) {
+    const d = diseases.find(x => x.id === id);
+    if (!d) return;
+    document.getElementById('detail-title').textContent = d.name;
+    document.getElementById('detail-icon').textContent = d.icon;
+
+    // ปรับสีขอบซ้ายใน Dark Mode ให้เข้ากับธีม
+    document.getElementById('section-overview').innerHTML = `
+      <div class="info-block" style="border-left-color: var(--warning-yellow);">
+        <h3>สาเหตุ</h3>
+        <p>${d.cause}</p>
+      </div>
+      <div class="info-block" style="border-left-color: var(--danger-red);">
+        <h3>อาการ</h3>
+        <ul>${d.symptoms.map(s=>`<li>${s}</li>`).join('')}</ul>
+      </div>
+    `;
+
+    document.getElementById('section-exam').innerHTML = `
+      <div class="info-block">
+        <h3>ขั้นตอนการตรวจ</h3>
+        <div style="margin-top:8px;">
+          ${d.exam.map((e,i)=>`<div class="exam-item"><span class="exam-num">${i+1}.</span><span>${e}</span></div>`).join('')}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('section-formula').innerHTML = `
+      <div class="formula-steps">
+        ${d.formula.map((f,i)=>`
+          <div class="formula-step">
+            <div class="step-num">${i+1}</div>
+            <div class="step-detail">
+              <div class="step-title">${f.s}</div>
+              ${f.note ? `<div class="step-note">⚠️ ${f.note}</div>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    const tipsHtml = d.tips.length ? d.tips.map(t=>`<div class="tip-card tip-do">${t}</div>`).join('') : '<p style="font-size:14px;color:var(--text-muted);">-</p>';
+    const dontsHtml = d.donts.length ? d.donts.map(t=>`<div class="tip-card tip-dont">${t}</div>`).join('') : '<p style="font-size:14px;color:var(--text-muted);">-</p>';
+    
+    // ปรับสีของหัวข้อคำแนะนำให้เข้ากับ Dark Mode
+    document.getElementById('section-tips').innerHTML = `
+      <div style="margin-bottom:1.25rem;">
+        <div style="font-size:12px;font-weight:600;color:var(--accent-green);margin-bottom:8px;letter-spacing:0.5px;">คำแนะนำหลังการรักษา</div>
+        ${tipsHtml}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--danger-red);margin-bottom:8px;letter-spacing:0.5px;">ข้อควรระวัง / ความถี่</div>
+        ${dontsHtml}
+      </div>
+    `;
+
+    showSectionDirect('overview');
+    document.getElementById('list-view').classList.add('hidden');
+    document.getElementById('detail-view').classList.remove('hidden');
+  }
+
+  function showSectionDirect(name) {
+    ['overview','exam','formula','tips'].forEach(s => {
+      document.getElementById('section-'+s).classList.add('hidden');
+    });
+    document.getElementById('section-'+name).classList.remove('hidden');
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+  }
+
+  function showSection(name, btn) {
+    ['overview','exam','formula','tips'].forEach(s => {
+      document.getElementById('section-'+s).classList.add('hidden');
+    });
+    document.getElementById('section-'+name).classList.remove('hidden');
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function showList() {
+    document.getElementById('detail-view').classList.add('hidden');
+    document.getElementById('list-view').classList.remove('hidden');
+  }
+
+  renderGrid();
+  </script>
+</body>
+</html>
