@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="th" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เวชกรรมไทย - ระบบคำนวณและสรุปเคสสมุฏฐาน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sarabun: ['Sarabun', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+        }
+        /* กระดาษ Canvas สรุปเคสเวชกรรมไทย */
+        .medical-sheet {
+            background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+            background-size: 18px 18px;
+            background-color: #fcfcf9;
+            border: 1px dashed #94a3b8;
+            transition: all 0.3s ease;
+        }
+        /* กระดาษ Canvas ในโหมดมืด (Dark Slate Blueprint) */
+        .dark .medical-sheet {
+            background-image: radial-gradient(#334155 1.2px, transparent 1.2px);
+            background-color: #0f172a;
+            border: 1px dashed #475569;
+        }
+        input, select {
+            font-size: 1rem !important;
+            transition: all 0.2s ease;
+        }
+        label {
+            font-size: 0.95rem !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased p-4 md:p-8 transition-colors duration-300">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header & Theme Switcher -->
+        <header class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-slate-800">
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl font-extrabold text-emerald-800 dark:text-emerald-400 tracking-tight flex items-center justify-center md:justify-start gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    ระบบช่วยวิเคราะห์และสรุปเคสสมุฏฐานคนไข้
+                </h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm md:text-base">พิมพ์กรอกข้อมูลเพื่อประมวลผลธาตุเจ้าเรือน (ฉันทศาสตร์/ปฐมจินดา) และคำนวณมหาพิกัดฤดู 3 </p>
+            </div>
+            
+            <!-- Dark Mode Toggle Button -->
+            <button onclick="toggleDarkMode()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-medium text-sm">
+                <!-- Sun Icon -->
+                <svg id="theme-sun" class="hidden h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+                <!-- Moon Icon -->
+                <svg id="theme-moon" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                <span id="theme-text" class="text-slate-700 dark:text-slate-300">โหมดมืด</span>
+            </button>
+        </header>
+
+        <!-- Main Layout Split Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Side: Interactive Input Forms (5 Columns) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Section 1: ข้อมูลวันเกิด -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 space-y-4">
+                    <h2 class="text-xl font-bold text-emerald-800 dark:text-emerald-400 border-b border-emerald-50 dark:border-emerald-950 pb-2 flex items-center gap-2">
+                        <span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 rounded-full w-7 h-7 inline-flex items-center justify-center text-sm font-bold">1</span>
+                        ประวัติและวันเกิด (คำนวณตามคัมภีร์)
+                    </h2>
+                    
+                    <div class="space-y-3">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400">วัน เดือน ปีเกิด (พ.ศ.) ของคนไข้</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <select id="birthDay" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-2.5 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" onchange="calculateRealTime()">
+                                    <option value="">วันเกิด</option>
+                                    <script>
+                                        for(let i=1; i<=31; i++) {
+                                            document.write(`<option value="${i}">${i}</option>`);
+                                        }
+                                    </script>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="birthMonth" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-2.5 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" onchange="calculateRealTime()">
+                                    <option value="">เดือนเกิด</option>
+                                    <option value="1">มกราคม (เดือน 2)</option>
+                                    <option value="2">กุมภาพันธ์ (เดือน 3)</option>
+                                    <option value="3">มีนาคม (เดือน 4)</option>
+                                    <option value="4">เมษายน (เดือน 5)</option>
+                                    <option value="5">พฤษภาคม (เดือน 6)</option>
+                                    <option value="6">มิถุนายน (เดือน 7)</option>
+                                    <option value="7">กรกฎาคม (เดือน 8)</option>
+                                    <option value="8">สิงหาคม (เดือน 9)</option>
+                                    <option value="9">กันยายน (เดือน 10)</option>
+                                    <option value="10">ตุลาคม (เดือน 11)</option>
+                                    <option value="11">พฤศจิกายน (เดือน 12)</option>
+                                    <option value="12">ธันวาคม (เดือนอ้าย/1)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <input type="number" id="birthYear" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-2.5 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="พ.ศ. (เช่น 2544)" oninput="calculateRealTime()">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs mt-1.5 px-1">
+                            <span class="text-slate-400 dark:text-slate-500">แปลงเป็นปฏิทินจันทรคติ:</span>
+                            <span id="birthLunarConversionText" class="font-bold text-emerald-600 dark:text-emerald-400">กรุณากรอกวันเกิด...</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">น้ำหนัก (กิโลกรัม)</label>
+                            <input type="number" id="weight" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="เช่น 60" oninput="calculateRealTime()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">ส่วนสูง (เซนติเมตร)</label>
+                            <input type="number" id="height" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="เช่น 165" oninput="calculateRealTime()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: สมุฏฐานแวดล้อมและสุริยคติแปรรหัส (ฤดู 3) -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 space-y-4">
+                    <h2 class="text-xl font-bold text-emerald-800 dark:text-emerald-400 border-b border-emerald-50 dark:border-emerald-950 pb-2 flex items-center gap-2">
+                        <span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 rounded-full w-7 h-7 inline-flex items-center justify-center text-sm font-bold">2</span>
+                        มหาพิกัดสมุฏฐานและถิ่นที่อยู่ (คัมภีร์สมุฏฐาน)
+                    </h2>
+
+                    <!-- ฤดูที่เริ่มมีอาการ -->
+                    <div class="space-y-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                        <label class="block text-xs font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">๑. วันที่คนไข้เริ่มมีอาการ (สุริยคติ)</label>
+                        <input type="date" id="onsetSolarDate" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" onchange="calculateRealTime()">
+                        <div class="flex items-center justify-between text-xs mt-1.5 px-1">
+                            <span class="text-slate-400 dark:text-slate-500">แปลงเป็นปฏิทินจันทรคติ:</span>
+                            <span id="onsetLunarConversionText" class="font-bold text-emerald-600 dark:text-emerald-400">กรุณาเลือกวันที่...</span>
+                        </div>
+                    </div>
+
+                    <!-- ฤดูที่มาพบแพทย์ -->
+                    <div class="space-y-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                        <label class="block text-xs font-extrabold text-teal-700 dark:text-teal-400 uppercase tracking-wider">๒. วันที่คนไข้มาพบแพทย์ (สุริยคติ)</label>
+                        <input type="date" id="visitSolarDate" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" onchange="calculateRealTime()">
+                        <div class="flex items-center justify-between text-xs mt-1.5 px-1">
+                            <span class="text-slate-400 dark:text-slate-500">แปลงเป็นปฏิทินจันทรคติ:</span>
+                            <span id="visitLunarConversionText" class="font-bold text-teal-600 dark:text-teal-400">กรุณาเลือกวันที่...</span>
+                        </div>
+                    </div>
+
+                    <!-- กาลสมุฏฐานเวลา (วัน) -->
+                    <div class="space-y-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">เวลาเกิดอาการเด่นชัด (กาลสมุฏฐาน)</label>
+                        <select id="dayTime" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" onchange="calculateRealTime()">
+                            <option value="ไม่สัมพันธ์กัน">ไม่สัมพันธ์กัน / ไม่เด่นชัด</option>
+                            <option value="เสมหะ">06.00-10.00 / 18.00-22.00 (เสมหะ)</option>
+                            <option value="ปิตตะ" selected>10.00-14.00 / 22.00-02.00 (ปิตตะ)</option>
+                            <option value="วาตะ">14.00-18.00 / 02.00-06.00 (วาตะ)</option>
+                        </select>
+                    </div>
+
+                    <!-- ประเทศสมุฏฐาน (ถิ่นกำเนิด/ที่อยู่อาศัย) -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">ประเทศสมุฏฐาน (ถิ่นที่อยู่/สถานที่กำเนิด)</label>
+                        <select id="countrySamutSelect" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" onchange="calculateRealTime()">
+                            <option value="1">ถิ่นที่สูง/ภูเขา/ชาวเขา (ประเทศร้อน - สมุฏฐานเตโช)</option>
+                            <option value="2">ถิ่นน้ำกรวดทราย/ที่ดอน (ประเทศอุ่น - สมุฏฐานอาโป ดี/โลหิต)</option>
+                            <option value="3" selected>ถิ่นน้ำฝนเปือกตม/ที่ลุ่มแม่น้ำ (ประเทศเย็น - สมุฏฐานวาโย)</option>
+                            <option value="4">ถิ่นน้ำเค็มเปือกตม/ชายฝั่ง (ประเทศหนาว - สมุฏฐานปถวี)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 3: มูลเหตุการเกิดโรค 8 ประการ -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 space-y-4">
+                    <h2 class="text-xl font-bold text-emerald-800 dark:text-emerald-400 border-b border-emerald-50 dark:border-emerald-950 pb-2 flex items-center gap-2">
+                        <span class="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 rounded-full w-7 h-7 inline-flex items-center justify-center text-sm font-bold">3</span>
+                        มูลเหตุการเกิดโรค 8 ประการ
+                    </h2>
+                    
+                    <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="อาหารผิดปกติ (มากไป/น้อยไป/บูดเสีย/ผิดเวลา)" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">1. อาหาร (บริโภคมากไปหรือน้อยไปกว่าปกติ ของบูดเสีย ของที่ควรสุกแต่ไม่สุก ของแปลกเกินขนาด หรือกินผิดเวลาที่เคย)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="อิริยาบถไม่ผลัดเปลี่ยน (นั่ง/นอน/ยืน/เดิน มากไปทางใดทางหนึ่ง)" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">2. อิริยาบถ (นั่ง นอน ยืน เดิน อย่างใดอย่างหนึ่งมากเกินไป ไม่ผลัดเปลี่ยน จนเส้นเอ็นแปรปรวน)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="ความร้อนเย็นเปลี่ยนแปลงกะทันหัน" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">3. ความร้อนและเย็น (ร่างกายเจอความร้อนหรือเย็นเปลี่ยนแปลงกะทันหัน เช่น จากที่ร่มออกแดดจัด หรือตากฝนแช่น้ำนาน)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="อดนอน อดอาหาร หรือน้ำ" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">4. อดนอน อดอาหาร หรืออดน้ำ (ถึงเวลาแต่ไม่ได้ทำ ต้องฝืนทนเกินเวลาอันควร)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="กลั้นอุจจาระหรือปัสสาวะนานเกินควร" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">5. กลั้นอุจจาระและปัสสาวะ (กลั้นไว้นานเกินควร ทำให้ธาตุในกายแปรปรวน)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="ทำการเกินกำลังกาย (ยก แบก หาม หรือใช้ความคิดหนักเกินไป)" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">6. ทำการเกินกำลัง (ยก แบก หาม ฉุด ลาก ของหนักเกินตัว หรือใช้ความคิด/ทำงานหนักจนเหน็ดเหนื่อยเกินปกติ)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="ความเศร้าโศกเสียใจ" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">7. ความเศร้าโศกเสียใจ (ทุกข์จนละเลยความสุขที่เคยมี ไม่เจริญอาหาร น้ำเลี้ยงหัวใจหม่นหมอง)</span>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer text-sm">
+                            <input type="checkbox" value="โทสะ (ขาดสติยับยั้ง)" class="cause-checkbox mt-1 h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-emerald-500" onchange="calculateRealTime()">
+                            <span class="text-slate-700 dark:text-slate-300">8. โทสะ (มีโทสะบ่อยจนขาดสติยับยั้ง ละเลยดูแลร่างกาย หรือถึงขั้นทำร้ายตนเอง)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="resetAll()" class="w-full py-3 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 12H18" />
+                    </svg>
+                    เคลียร์และเริ่มเขียนเคสใหม่
+                </button>
+            </div>
+
+            <!-- Right Side: The Medical Canvas Case Sheet (7 Columns) -->
+            <div class="lg:col-span-7 sticky top-8">
+                <div class="medical-sheet shadow-lg rounded-2xl p-6 md:p-8 relative overflow-hidden">
+                    
+                    <!-- Decorative Top Ribbon -->
+                    <div class="absolute top-0 left-0 w-full h-2.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700"></div>
+                    
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <span class="text-sm font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-3.5 py-1.5 rounded-full">เวชกรรมไทยประยุกต์</span>
+                            <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-3">ใบวิเคราะห์และสรุปสมุฏฐานคนไข้</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5">รายงานสรุปผลประเมินตามมหาพิกัดสมุฏฐานฤดู 3</p>
+                        </div>
+                        <div class="text-right text-sm text-slate-500 dark:text-slate-400">
+                            <div>รหัสบันทึก: <span id="recordId" class="font-mono font-bold text-slate-700 dark:text-slate-300">--</span></div>
+                            <div class="mt-0.5">วันที่วิเคราะห์: <span id="currentDate">--/--/----</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Line Divider -->
+                    <div class="border-b border-dashed border-slate-300 dark:border-slate-800 my-4"></div>
+
+                    <!-- Canvas Content Area with Large Readability Texts -->
+                    <div class="space-y-6">
+                        
+                        <!-- 1. ข้อมูลสมบัติส่วนบุคคล -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 block">วันเกิดของคนไข้</span>
+                                <span id="canvasBirthDayText" class="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 block">--</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 block">อายุคนไข้จริง</span>
+                                <span id="canvasAge" class="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 block">-- ปี</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 block">พิกัดอายุสมุฏฐาน</span>
+                                <span id="canvasAgeType" class="text-sm md:text-base font-bold text-emerald-800 dark:text-emerald-400 block">--</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 dark:text-slate-400 block">ดัชนีมวลกาย (BMI)</span>
+                                <span id="canvasBMI" class="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 block">--</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. ข้อมูลธาตุเจ้าเรือน (ฉันทศาสตร์ & ปฐมจินดา) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- ธาตุเจ้าเรือนตามวันเกิด (ฉันทศาสตร์) -->
+                            <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm rounded-xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-2">
+                                <span class="text-xs font-bold text-teal-800 dark:text-teal-400 uppercase tracking-wider block">๑. ธาตุเจ้าเรือนตามวันเกิด (ฉันทศาสตร์)</span>
+                                <div>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block">วิเคราะห์จากวันเกิด:</span>
+                                    <span id="canvasChanthasartElement" class="text-base font-bold text-slate-800 dark:text-slate-200 block">--</span>
+                                </div>
+                                <p id="canvasChanthasartDetails" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">--</p>
+                            </div>
+
+                            <!-- ธาตุเจ้าเรือนปฏิสนธิ (ปฐมจินดา) -->
+                            <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm rounded-xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-2">
+                                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider block">๒. ธาตุเจ้าเรือนปฏิสนธิ (ปฐมจินดา)</span>
+                                <div>
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block">วิเคราะห์จากเดือนเกิด:</span>
+                                    <span id="canvasPatomjindaElement" class="text-base font-bold text-slate-800 dark:text-slate-200 block">--</span>
+                                </div>
+                                <p id="canvasPatomjindaDetails" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">--</p>
+                            </div>
+                        </div>
+
+                        <!-- 3. สมุฏฐานและมหาพิกัดฤดู 3 พิสดารย่อย และประเทศสมุฏฐาน -->
+                        <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm rounded-xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                            <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider block">๓. มหาพิกัดและปัจจัยสมุฏฐาน (พิกัดย่อย 40 วัน & ถิ่นที่อยู่)</span>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- ฤดูเริ่มมีอาการ -->
+                                <div class="border-l-4 border-amber-500 pl-3 space-y-1">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-bold">ฤดูสมุฏฐานย่อย (เริ่มมีอาการ)</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span id="canvasSeason" class="text-base font-extrabold text-slate-800 dark:text-slate-200">--</span>
+                                        <span id="canvasSeasonMini" class="text-xs bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">--</span>
+                                    </div>
+                                    <span id="canvasSeasonDetail" class="text-xs text-slate-600 dark:text-slate-300 block leading-relaxed italic">--</span>
+                                </div>
+
+                                <!-- ฤดูมาพบแพทย์ -->
+                                <div class="border-l-4 border-teal-500 pl-3 space-y-1">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-bold">ฤดูสมุฏฐานย่อย (ที่มาพบแพทย์)</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span id="canvasVisitSeason" class="text-base font-extrabold text-slate-800 dark:text-slate-200">--</span>
+                                        <span id="canvasVisitSeasonMini" class="text-xs bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-400 px-2 py-0.5 rounded-full font-bold">--</span>
+                                    </div>
+                                    <span id="canvasVisitSeasonDetail" class="text-xs text-slate-600 dark:text-slate-300 block leading-relaxed italic">--</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-dashed border-slate-200 dark:border-slate-800">
+                                <!-- กาลสมุฏฐานเวลาเกิดอาการ -->
+                                <div class="border-l-4 border-indigo-500 pl-3 space-y-0.5">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-bold">กาลสมุฏฐาน (เวลาเกิดโรค)</span>
+                                    <span id="canvasTime" class="text-sm font-bold text-slate-800 dark:text-slate-200 block">--</span>
+                                    <span id="canvasTimeDetail" class="text-xs text-slate-500 dark:text-slate-400 block">--</span>
+                                </div>
+                                <!-- อายุสมุฏฐาน -->
+                                <div class="border-l-4 border-rose-500 pl-3 space-y-0.5">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-bold">อายุสมุฏฐาน (ตรีธาตุ)</span>
+                                    <span id="canvasAgeSamut" class="text-sm font-bold text-slate-800 dark:text-slate-200 block">--</span>
+                                    <span id="canvasAgeSamutDetail" class="text-xs text-slate-500 dark:text-slate-400 block">--</span>
+                                </div>
+                                <!-- ประเทศสมุฏฐาน -->
+                                <div class="border-l-4 border-amber-600 pl-3 space-y-0.5">
+                                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-bold">ประเทศสมุฏฐาน (ที่อยู่อาศัย)</span>
+                                    <span id="canvasCountry" class="text-sm font-bold text-amber-800 dark:text-amber-400 block">--</span>
+                                    <span id="canvasCountryDetail" class="text-xs text-slate-500 dark:text-slate-400 block leading-tight">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. มูลเหตุการเกิดโรค -->
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider block">๔. มูลเหตุเกิดโรคสะสม (พฤติกรรมก่อโรค)</span>
+                            <div id="canvasCausesContainer" class="flex flex-wrap gap-2 min-h-[36px] items-center">
+                                <span class="text-sm text-slate-500 dark:text-slate-400 italic">กรุณาเลือกติ๊กข้อมูลทางซ้าย...</span>
+                            </div>
+                        </div>
+
+                        <!-- 5. สรุปความดันดัชนีมวลกาย BMI -->
+                        <div class="bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl p-4 border border-emerald-100 dark:border-emerald-950/50 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                            <div class="space-y-1">
+                                <span class="text-sm font-bold text-emerald-800 dark:text-emerald-400 block">ดัชนีมวลกายและภาวะร่างกาย (BMI)</span>
+                                <span id="canvasBMIStatus" class="text-base font-semibold text-slate-800 dark:text-slate-200">--</span>
+                                <span class="text-[11px] text-slate-400 dark:text-slate-500 block">
+                                    * อ้างอิง: กรมอนามัย กระทรวงสาธารณสุข
+                                </span>
+                            </div>
+                            <div class="text-right flex items-baseline md:flex-col justify-end gap-1.5 md:gap-0">
+                                <span class="text-3xl font-black text-emerald-700 dark:text-emerald-400" id="canvasBMIDisplay">--.-</span>
+                                <span class="text-xs text-emerald-600 dark:text-emerald-500 block font-bold">kg/m²</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer Canvas -->
+                    <div class="border-b border-dashed border-slate-300 dark:border-slate-800 my-5"></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left leading-relaxed max-w-md">
+                            * ระบบประมวลผลสรุปพิกัดสมุฏฐาน 3 และภูมิศาสตร์ตามตำราคัมภีร์เวชกรรมแพทย์แผนไทยประยุกต์
+                        </div>
+                        <button onclick="copyToClipboard()" class="bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-bold text-sm py-2.5 px-5 rounded-lg shadow-sm transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            คัดลอกสรุปสมุฏฐาน
+                        </button>
+                    </div>
+
+                    <!-- Custom Alert Notification inside Canvas -->
+                    <div id="copyToast" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-slate-800 dark:bg-slate-700 text-white text-xs px-4 py-2 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300">
+                        คัดลอกข้อความสรุปเคสเรียบร้อยแล้ว!
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // อัลกอริทึมปฏิทินจันทรคติไทยแม่นยำสูง (จากไฟล์ .bas ของ อ.ลอย ชุนพงษ์ทอง)
+        // ==========================================
+
+        const START_Y = [
+            { year: 1901, value: 0.122733000004352 },
+            { year: 1906, value: 1.91890000045229e-2 },
+            { year: 1911, value: -8.43549999953059e-2 },
+            { year: 1916, value: -0.187898999995135 },
+            { year: 1921, value: -0.291442999994964 },
+            { year: 1926, value: 7.44250000052413e-2 },
+            { year: 1931, value: -2.91189999945876e-2 },
+            { year: 1936, value: -0.132662999994416 },
+            { year: 1941, value: -0.236206999994245 },
+            { year: 1946, value: -0.339750999994074 },
+            { year: 1951, value: -0.443294999993903 },
+            { year: 1956, value: -7.74269999936981e-2 },
+            { year: 1961, value: -0.180970999993527 },
+            { year: 1966, value: -0.284514999993356 },
+            { year: 1971, value: -0.388058999993185 },
+            { year: 1976, value: -0.491602999993014 },
+            { year: 1981, value: -0.595146999992842 },
+            { year: 1986, value: -0.698690999992671 },
+            { year: 1991, value: -0.332822999992466 },
+            { year: 1996, value: -0.436366999992295 },
+            { year: 2001, value: -0.539910999992124 },
+            { year: 2006, value: -0.643454999991953 },
+            { year: 2011, value: 0.253001000008218 },
+            { year: 2016, value: 0.149457000008389 },
+            { year: 2021, value: -0.484674999991406 },
+            { year: 2026, value: -0.588218999991235 },
+            { year: 2031, value: 0.308237000008937 },
+            { year: 2036, value: 0.204693000009108 },
+            { year: 2041, value: 0.101149000009279 },
+            { year: 2046, value: -2.39499999055015e-3 },
+            { year: 2051, value: -0.105938999990379 },
+            { year: 2056, value: 0.259929000009826 },
+            { year: 2061, value: 0.156385000009997 },
+            { year: 2066, value: 5.28410000101682e-2 },
+            { year: 2071, value: -5.07029999896607e-2 },
+            { year: 2076, value: -0.15424699998949 },
+            { year: 2081, value: -0.257790999989318 },
+            { year: 2086, value: 0.108077000010887 },
+            { year: 2091, value: 4.53300001105772e-3 },
+            { year: 2096, value: -9.90109999887712e-2 },
+            { year: 2101, value: -0.2025549999886 },
+            { year: 2106, value: -0.306098999988429 },
+            { year: 2111, value: -0.409642999988258 },
+            { year: 2116, value: -4.37749999880528e-2 },
+            { year: 2121, value: -0.147318999987882 },
+            { year: 2126, value: -0.250862999987711 },
+            { year: 2131, value: -0.354406999987539 },
+            { year: 2136, value: -0.457950999987368 },
+            { year: 2141, value: -0.561494999987197 },
+            { year: 2146, value: -0.665038999987026 },
+            { year: 2151, value: -0.29917099996821 },
+            { year: 2156, value: -0.40271499998665 },
+            { year: 2161, value: -0.506258999986479 },
+            { year: 2166, value: -0.609802999986308 },
+            { year: 2171, value: -0.713346999986137 },
+            { year: 2176, value: 0.183109000014035 },
+            { year: 2181, value: -0.45102299998576 },
+            { year: 2186, value: -0.554566999985589 },
+            { year: 2191, value: 0.341889000014582 },
+            { year: 2196, value: 0.238345000014753 },
+            { year: 2201, value: 0.134801000014924 },
+            { year: 2206, value: 3.12570000150951e-2 },
+            { year: 2211, value: -7.22869999847338e-2 },
+            { year: 2216, value: 0.293581000015471 },
+            { year: 2221, value: 0.190037000015642 },
+            { year: 2226, value: 8.64930000158135e-2 },
+            { year: 2231, value: -1.70509999840154e-2 },
+            { year: 2236, value: -0.120594999983844 },
+            { year: 2241, value: -0.224138999983673 },
+            { year: 2246, value: 0.141729000016532 },
+            { year: 2251, value: 0.038185000016703 },
+            { year: 2256, value: -6.53589999831259e-2 },
+            { year: 2261, value: -0.168902999982955 },
+            { year: 2266, value: -0.272446999982784 },
+            { year: 2271, value: -0.375990999982613 },
+            { year: 2276, value: -1.01229999824075e-2 },
+            { year: 2281, value: -0.113666999982236 },
+            { year: 2286, value: -0.217210999982065 },
+            { year: 2291, value: -0.320754999981894 },
+            { year: 2296, value: -0.424298999981723 },
+            { year: 2301, value: -0.527842999981552 },
+            { year: 2306, value: -0.631386999981381 },
+            { year: 2311, value: -0.265518999981176 },
+            { year: 2316, value: -0.369062999981005 },
+            { year: 2321, value: -0.472606999980834 },
+            { year: 2326, value: -0.576150999980662 },
+            { year: 2331, value: -0.679694999980491 },
+            { year: 2336, value: 0.21676100001968 },
+            { year: 2341, value: -0.417370999980115 },
+            { year: 2346, value: -0.520914999979944 },
+            { year: 2351, value: -0.624458999979773 },
+            { year: 2356, value: 0.271997000020398 },
+            { year: 2361, value: 0.168453000020569 },
+            { year: 2366, value: 6.49090000207404e-2 },
+            { year: 2371, value: -3.86349999790885e-2 },
+            { year: 2376, value: 0.327233000021117 },
+            { year: 2381, value: 0.223689000021288 },
+            { year: 2386, value: 0.120145000021459 },
+            { year: 2391, value: 1.66010000216299e-2 },
+            { year: 2396, value: -0.086942999978199 },
+            { year: 2401, value: -0.190486999978028 },
+            { year: 2406, value: 0.175381000022177 },
+            { year: 2411, value: 7.18370000223483e-2 },
+            { year: 2416, value: -3.17069999774806e-2 },
+            { year: 2421, value: -0.135250999977309 },
+            { year: 2426, value: -0.238794999977138 },
+            { year: 2431, value: -0.342338999976967 },
+            { year: 2436, value: 2.35290000232378e-2 },
+            { year: 2441, value: -8.00149999765911e-2 },
+            { year: 2446, value: -0.18355899997642 },
+            { year: 2451, value: -0.287102999976249 },
+            { year: 2456, value: -0.390646999976078 }
+        ];
+
+        const S_DATES = [
+            new Date(1902, 10, 30), new Date(1912, 11, 8), new Date(1922, 10, 19), new Date(1932, 10, 27),
+            new Date(1942, 11, 7), new Date(1952, 10, 16), new Date(1962, 10, 26), new Date(1972, 11, 5),
+            new Date(1982, 10, 15), new Date(1992, 10, 24), new Date(2002, 11, 4), new Date(2012, 10, 13),
+            new Date(2022, 10, 23), new Date(2032, 11, 2), new Date(2042, 11, 12), new Date(2052, 10, 21),
+            new Date(2062, 11, 1), new Date(2072, 11, 9), new Date(2082, 10, 20), new Date(2092, 10, 28),
+            new Date(2102, 11, 9), new Date(2112, 10, 18), new Date(2122, 10, 28), new Date(2132, 11, 7),
+            new Date(2142, 10, 17), new Date(2152, 10, 26), new Date(2162, 11, 6), new Date(2172, 10, 15),
+            new Date(2182, 10, 25), new Date(2192, 11, 4), new Date(2202, 11, 15), new Date(2212, 10, 24),
+            new Date(2222, 11, 4), new Date(2232, 11, 12), new Date(2242, 10, 23), new Date(2252, 11, 1),
+            new Date(2262, 11, 11), new Date(2272, 10, 20), new Date(2282, 10, 30), new Date(2292, 11, 9),
+            new Date(2302, 10, 20), new Date(2312, 10, 29), new Date(2322, 11, 9), new Date(2332, 10, 18),
+            new Date(2342, 10, 28), new Date(2352, 11, 7), new Date(2362, 11, 17), new Date(2372, 10, 26),
+            new Date(2382, 11, 6), new Date(2392, 11, 14), new Date(2402, 10, 25), new Date(2412, 11, 3),
+            new Date(2422, 11, 13), new Date(2432, 10, 23), new Date(2442, 11, 2), new Date(2452, 11, 11)
+        ];
+
+        // แผนผังหน่วยความจำแคชเพื่อกัน Stack Overflow
+        const deviationCache = {};
+        const athikaMasCache = {};
+        const athikaVarCache = {};
+
+        function XLMod(a, b) {
+            return a - b * Math.floor(a / b);
+        }
+
+        function athikaMas(iYear) {
+            if (athikaMasCache[iYear] !== undefined) return athikaMasCache[iYear];
+            const athi = XLMod((iYear - 78) - 0.45222, 2.7118886);
+            const res = athi < 1;
+            athikaMasCache[iYear] = res;
+            return res;
+        }
+
+        function athikaVar(iYear) {
+            if (athikaVarCache[iYear] !== undefined) return athikaVarCache[iYear];
+            if (athikaMas(iYear)) {
+                athikaVarCache[iYear] = false;
+                return false;
+            }
+            const cutOff = athikaMas(iYear + 1) ? 1.69501433191599e-2 : -1.42223099315486e-2;
+            const res = getDeviation(iYear) > cutOff;
+            athikaVarCache[iYear] = res;
+            return res;
+        }
+
+        function getDeviation(iYear) {
+            if (deviationCache[iYear] !== undefined) return deviationCache[iYear];
+            
+            let fYear = 0;
+            let fDev = 0;
+            for (let idx = START_Y.length - 1; idx >= 0; idx--) {
+                if (iYear >= START_Y[idx].year) {
+                    fYear = START_Y[idx].year;
+                    fDev = START_Y[idx].value;
+                    break;
+                }
+            }
+            if (fYear === 0) return 0;
+            if (iYear === fYear) {
+                deviationCache[iYear] = fDev;
+                return fDev;
+            }
+            
+            let currDev = fDev;
+            for (let i = fYear + 1; i <= iYear; i++) {
+                const lastDev = currDev;
+                let diff = 0;
+                if (athikaMas(i - 1)) {
+                    diff = -0.102356;
+                } else if (athikaVar(i - 1)) {
+                    diff = -0.632944;
+                } else {
+                    diff = 0.367056;
+                }
+                currDev = lastDev + diff;
+            }
+            
+            deviationCache[iYear] = currDev;
+            return currDev;
+        }
+
+        function lDayInYear(iYear) {
+            if (athikaMas(iYear)) {
+                return 384;
+            } else if (athikaVar(iYear)) {
+                return 355;
+            } else {
+                return 354;
+            }
+        }
+
+        function dateDiffInDays(d1, d2) {
+            const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+            const utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+            return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
+        }
+
+        function addDays(date, days) {
+            const res = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            res.setDate(res.getDate() + days);
+            return res;
+        }
+
+        function parseLocalDate(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return null;
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+
+        // ตัวแปลงหลักสุริยคติเป็นจันทรคติไทยสูตรแม่นยำสูง
+        function convertSolarToThaiLunar(gregorianDate) {
+            if (!gregorianDate || isNaN(gregorianDate.getTime())) {
+                return null;
+            }
+            const yearAD = gregorianDate.getFullYear();
+            if (yearAD < 1903 || yearAD > 2460) {
+                return null; // ขอบเขตที่สูตรของอาจารย์ลอยรองรับแบบปลอดภัย
+            }
+            
+            const cYear = yearAD - 1;
+            let beginDate = null;
+            for (let idx = S_DATES.length - 1; idx >= 0; idx--) {
+                const sYear = 1902 + 10 * idx;
+                if (cYear > sYear) {
+                    beginDate = new Date(S_DATES[idx]);
+                    break;
+                }
+            }
+            if (!beginDate) {
+                beginDate = new Date(S_DATES[0]);
+            }
+            
+            let prevYear = new Date(beginDate);
+            const startYear = beginDate.getFullYear() + 1;
+            const endYear = yearAD - 1;
+
+            for (let i = startYear; i <= endYear; i++) {
+                const dayInYear = lDayInYear(i);
+                prevYear = addDays(prevYear, dayInYear);
+            }
+            
+            const rDayPrev = dateDiffInDays(prevYear, new Date(prevYear.getFullYear(), 11, 31));
+            const dayOfYear = dateDiffInDays(new Date(yearAD, 0, 1), gregorianDate);
+            const dayFromOne = rDayPrev + dayOfYear + 1;
+            const nbLDayYear = lDayInYear(yearAD);
+            
+            let dofY = dayFromOne;
+            let thM = 1;
+            let isSecondMonth8 = false;
+            
+            if (nbLDayYear === 354) {
+                const monthDays = [29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30];
+                for (let j = 1; j <= 14; j++) {
+                    thM = j;
+                    const limit = monthDays[j - 1];
+                    if (dofY <= limit && dofY > 0) {
+                        break;
+                    } else {
+                        dofY -= limit;
+                    }
+                }
+                if (thM > 12) thM = thM - 12;
+            } else if (nbLDayYear === 355) {
+                const monthDays = [29, 30, 29, 30, 29, 30, 30, 30, 29, 30, 29, 30, 29, 30];
+                for (let j = 1; j <= 14; j++) {
+                    thM = j;
+                    const limit = monthDays[j - 1];
+                    if (dofY <= limit && dofY > 0) {
+                        break;
+                    } else {
+                        dofY -= limit;
+                    }
+                }
+                if (thM > 12) thM = thM - 12;
+            } else if (nbLDayYear === 384) {
+                const monthDays = [29, 30, 29, 30, 29, 30, 29, 30, 30, 29, 30, 29, 30, 29, 30];
+                for (let j = 1; j <= 15; j++) {
+                    thM = j;
+                    const limit = monthDays[j - 1];
+                    if (dofY <= limit && dofY > 0) {
+                        break;
+                    } else {
+                        dofY -= limit;
+                    }
+                }
+                if (thM > 13) {
+                    thM = thM - 13;
+                }
+                
+                if (thM === 9) {
+                    thM = 8;
+                    isSecondMonth8 = true;
+                } else if (thM === 10) {
+                    thM = 9;
+                } else if (thM === 11) {
+                    thM = 10;
+                } else if (thM === 12) {
+                    thM = 11;
+                } else if (thM === 13) {
+                    thM = 12;
+                }
+            }
+            
+            let phase = "ขึ้น";
+            let kham = dofY;
+            if (dofY > 15) {
+                phase = "แรม";
+                kham = dofY - 15;
+            }
+            
+            return {
+                phase: phase,
+                kham: kham,
+                month: thM,
+                isSecondMonth8: isSecondMonth8
+            };
+        }
+
+        // ==========================================
+        // ตรรกะงานระบบคำนวณเวชกรรมไทยและสรุปเคส
+        // ==========================================
+
+        window.onload = function() {
+            const d = new Date();
+            const yearBE = 2569; // ดึงปีระบบจำลอง 2026 (พ.ศ. 2569)
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            document.getElementById('currentDate').innerText = `${day}/${month}/${yearBE}`;
+            
+            const randomID = "TTM-" + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('recordId').innerText = randomID;
+
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            
+            document.getElementById('onsetSolarDate').value = todayStr;
+            document.getElementById('visitSolarDate').value = todayStr;
+
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                updateThemeToggleUI(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeToggleUI(false);
+            }
+
+            calculateRealTime();
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            if (isDark) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+            updateThemeToggleUI(isDark);
+        }
+
+        function updateThemeToggleUI(isDark) {
+            const sunIcon = document.getElementById('theme-sun');
+            const moonIcon = document.getElementById('theme-moon');
+            const themeText = document.getElementById('theme-text');
+
+            if (isDark) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                themeText.innerText = "โหมดสว่าง";
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                themeText.innerText = "โหมดมืด";
+            }
+        }
+
+        function getLunarDayIndex(phase, kham, month, isSecondMonth8) {
+            const monthOffsets = {
+                4: 0,
+                5: 30,
+                6: 59,
+                7: 89,
+                8: 118,
+                9: 148,
+                10: 177,
+                11: 207,
+                12: 236,
+                1: 266,
+                2: 295,
+                3: 325
+            };
+            
+            let baseOffset = monthOffsets[month] !== undefined ? monthOffsets[month] : 0;
+            if (isSecondMonth8 && month === 8) {
+                baseOffset += 30;
+            }
+            
+            const dayOffset = (phase === "ขึ้น") ? (kham - 1) : (15 + kham - 1);
+            return baseOffset + dayOffset;
+        }
+
+        function analyzeLunarSeason(phase, kham, month, isSecondMonth8) {
+            const d = getLunarDayIndex(phase, kham, month, isSecondMonth8);
+            
+            if (d >= 15 && d <= 132) {
+                if (d >= 15 && d <= 54) {
+                    return {
+                        season: "คิมหันตฤดู (ร้อน)",
+                        pikkad: "พัทธปิตตะ",
+                        desc: "จากแรม 1 ค่ำ เดือน 4 ไปจนถึงแรม 10 ค่ำ เดือน 5 (40 วัน) เป็นตำแหน่งพัทธปิตตะสมุฏฐาน และพัทธปิตตะจะได้ทำเองหามิได้ อาศัยจตุกาลเตโชกองใดกองหนึ่งระคนพัทธปิตตะสมุฏฐาน เหตุว่าเป็นเจ้าของ ถ้าจะแก้อย่าให้เสียเดิมโดยพิกัด"
+                    };
+                } else if (d >= 55 && d <= 93) {
+                    return {
+                        season: "คิมหันตฤดู (ร้อน)",
+                        pikkad: "อพัทธปิตตะ",
+                        desc: "จากแรม 11 ค่ำ เดือน 5 ไปจนถึงขึ้น 5 ค่ำ เดือน 7 (40 วัน) เป็นตำแหน่งอพัทธปิตตะสมุฏฐาน แต่อพัทธปิตตะจะได้ทำเต็มที่หามิได้ อพัทธปิตตะกระทำกึ่งหนึ่ง จตุกาลเตโชกระทำกึ่งหนึ่งระคนกัน"
+                    };
+                } else {
+                    return {
+                        season: "คิมหันตฤดู (ร้อน)",
+                        pikkad: "กำเดา",
+                        desc: "จากขึ้น 6 ค่ำ เดือน 7 ไปจนถึงขึ้น 15 ค่ำ เดือน 8 (40 วัน) เป็นตำแหน่งกำเดา จะได้ระคนด้วยกาลเตโชกองใดกองหนึ่งหามิได้ ด้วยเหตุว่ากำเดานี้ทั่วไปในสมุฏฐานทั้ง 3 คือ พัทธปิตตะ อพัทธปิตตะ และกำเดา จะให้กายบริบูรณ์หรือไม่บริบูรณ์ก็เพราะกำเดา ถ้าจะแก้อย่าให้เสียกำเดาโดยพิกัด"
+                    };
+                }
+            }
+            else if (d >= 133 && d <= 250) {
+                if (d >= 133 && d <= 172) {
+                    return {
+                        season: "วสันตฤดู (ฝน)",
+                        pikkad: "หทัยวาตะ",
+                        desc: "จากแรม 1 ค่ำ เดือน 8 ไปจนถึงแรม 10 ค่ำ เดือน 9 (40 วัน) เป็นตำแหน่งหทัยวาตะสมุฏฐาน แต่หทัยวาตะจะได้กระทำเองนั้นหามิได้ อาศัยฉกาลวาโยกองใดกองหนึ่งระคนหทัยวาตะสมุฏฐาน เหตุว่าเป็นเจ้าของ ถ้าจะแก้อย่าเสียเดิมโดยพิกัด"
+                    };
+                } else if (d >= 173 && d <= 211) {
+                    return {
+                        season: "วสันตฤดู (ฝน)",
+                        pikkad: "สัตถกะวาตะ",
+                        desc: "จากแรม 11 ค่ำ เดือน 9 ไปจนถึงขึ้น 5 ค่ำ เดือน 11 (40 วัน) เป็นตำแหน่งสัตถกะวาตะสมุฏฐาน กระทำกึ่งหนึ่ง ฉกาลวาโยกระทำกึ่งหนึ่งระคนกัน ถ้าจะแก้อย่าให้เสียของเดิมโดยพิกัด"
+                    };
+                } else {
+                    return {
+                        season: "วสันตฤดู (ฝน)",
+                        pikkad: "สุมนาวาตะ",
+                        desc: "จากขึ้น 6 ค่ำ เดือน 11 ไปจนถึงขึ้น 15 ค่ำ เดือน 12 (40 วัน) เป็นตำแหน่งสุมนาวาตะสมุฏฐาน แต่สุมนาวาตะจะได้ระคนด้วยกาลวาโยกองใดกองหนึ่งนั้นหามิได้ โดยเหตุว่าสุมนาวาตะนี้ทั่วไปในสมุฏฐานทั้ง 3 คือ หทัยวาตะ สัตถกะวาตะ และสุมนาวาตะ อาจให้กระวนกระวายหรือมิได้กระวนกระวายก็เพราะสุมนาวาตะ ถ้าจะแก้อย่าให้เสียสุมนาสมุฏฐาน"
+                    };
+                }
+            }
+            else {
+                if (d >= 251 && d <= 290) {
+                    return {
+                        season: "เหมันตฤดู (หนาว)",
+                        pikkad: "ศอเสมหะ",
+                        desc: "จากแรม 1 ค่ำ เดือน 12 ไปจนถึงแรม 10 ค่ำ เดือน 1 (40 วัน) เป็นตำแหน่งศอเสมหะ แต่ศอเสมหะจะได้ทำเองนั้นหามิได้ อาศัยกาลปะระเมหะ คือเอาอาโปกองใดกองหนึ่งลงมาระคนศอเสมหะสมุฏฐาน เหตุว่าเป็นเจ้าของ ถ้าจะแก้อย่าให้เสียเจ้าของเดิมโดยพิกัด"
+                    };
+                } else if (d >= 291 && d <= 329) {
+                    return {
+                        season: "เหมันตฤดู (หนาว)",
+                        pikkad: "อุระเสมหะ",
+                        desc: "จากแรม 11 ค่ำ เดือน 1 ไปจนถึงขึ้น 5 ค่ำ เดือน 3 (40 วัน) เป็นตำแหน่งอุระเสมหะสมุฏฐาน กระทำกึ่งหนึ่ง กาลปะระเมหะกระทำกึ่งหนึ่งระคนกัน ถ้าจะแก้อย่าให้เสียเจ้าของเดิมโดยพิกัด"
+                    };
+                } else {
+                    return {
+                        season: "เหมันตฤดู (หนาว)",
+                        pikkad: "คูถเสมหะ",
+                        desc: "จากขึ้น 6 ค่ำ เดือน 3 ไปจนถึงขึ้น 15 ค่ำ เดือน 4 (40 วัน) เป็นตำแหน่งคูถเสมหะสมุฏฐาน คูถเสมหะจะได้ระคนด้วยกาลปะระเมหะ คืออาโปกองใดกองหนึ่งนั้นหามิได้ ด้วยเหตุว่าคูถเสมหะนี้ทั่วไปในสมุฏฐานทั้ง 3 คือ ศอเสมหะ อุระเสมหะ คูถเสมหะ อาจให้กายบริบูรณ์หรือไม่บริบูรณ์ก็เพราะคูถเสมหะ ถ้าจะแก้อย่าให้เสียคูถเสมหะสมุฏฐานโดยพิกัด"
+                    };
+                }
+            }
+        }
+
+        function calculateRealTime() {
+            const currentYearBE = 2569; 
+            const currentMonthAD = 7;   
+            const currentDayAD = 8;     
+            
+            const bDay = parseInt(document.getElementById('birthDay').value);
+            const bMonth = parseInt(document.getElementById('birthMonth').value);
+            const bYearBE = parseInt(document.getElementById('birthYear').value);
+
+            const canvasBirthDayText = document.getElementById('canvasBirthDayText');
+            const canvasAgeSpan = document.getElementById('canvasAge');
+            const canvasAgeTypeSpan = document.getElementById('canvasAgeType');
+            const canvasAgeSamut = document.getElementById('canvasAgeSamut');
+            const canvasAgeSamutDetail = document.getElementById('canvasAgeSamutDetail');
+
+            const canvasChanthasartElement = document.getElementById('canvasChanthasartElement');
+            const canvasChanthasartDetails = document.getElementById('canvasChanthasartDetails');
+            const canvasPatomjindaElement = document.getElementById('canvasPatomjindaElement');
+            const canvasPatomjindaDetails = document.getElementById('canvasPatomjindaDetails');
+
+            let hasValidDOB = false;
+            let calculatedAge = 0;
+            let dayOfWeekName = "";
+
+            if (bDay && bMonth && bYearBE && bYearBE > 2400 && bYearBE <= currentYearBE) {
+                hasValidDOB = true;
+                const bYearAD = bYearBE - 543;
+                
+                calculatedAge = currentYearBE - bYearBE;
+                if (currentMonthAD < bMonth || (currentMonthAD === bMonth && currentDayAD < bDay)) {
+                    calculatedAge--;
+                }
+                if (calculatedAge < 0) calculatedAge = 0;
+
+                const dobDate = new Date(bYearAD, bMonth - 1, bDay);
+                const dayOfWeek = dobDate.getDay();
+                
+                const thaiDays = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+                dayOfWeekName = thaiDays[dayOfWeek];
+                
+                const birthLunar = convertSolarToThaiLunar(dobDate);
+                let birthLunarStr = "--";
+                if (birthLunar) {
+                    birthLunarStr = `${birthLunar.phase} ${birthLunar.kham} ค่ำ เดือน ${birthLunar.month}`;
+                    if (birthLunar.isSecondMonth8) {
+                        birthLunarStr = `${birthLunar.phase} ${birthLunar.kham} ค่ำ เดือน 8 (สองหน)`;
+                    }
+                    document.getElementById('birthLunarConversionText').innerText = birthLunarStr;
+                } else {
+                    document.getElementById('birthLunarConversionText').innerText = "ไม่สามารถระบุได้";
+                }
+                
+                canvasBirthDayText.innerHTML = `วัน${dayOfWeekName}ที่ ${bDay}/${bMonth}/${bYearBE} <span class="text-xs text-emerald-600 dark:text-emerald-400 block font-semibold">(${birthLunarStr})</span>`;
+
+                // --- 1. วิเคราะห์ธาตุเจ้าเรือนติดตัววันเกิด (คัมภีร์ฉันทศาสตร์) ---
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    canvasChanthasartElement.innerText = "เตโชธาตุ (ธาตุไฟ)";
+                    canvasChanthasartElement.className = "text-base font-bold text-rose-600 dark:text-rose-400 block";
+                    canvasChanthasartDetails.innerText = "คัมภีร์ฉันทศาสตร์ระบุคนเกิดวันเสาร์/อาทิตย์ เป็นคนธาตุไฟ ระบบย่อยอาหารทำงานเร็ว อารมณ์กระฉับกระเฉง ขี้ร้อน";
+                } else if (dayOfWeek === 3 || dayOfWeek === 5) {
+                    canvasChanthasartElement.innerText = "อาโปธาตุ (ธาตุน้ำ)";
+                    canvasChanthasartElement.className = "text-base font-bold text-sky-600 dark:text-sky-400 block";
+                    canvasChanthasartDetails.innerText = "คัมภีร์ฉันทศาสตร์ระบุคนเกิดวันพุธ/ศุกร์ เป็นคนธาตุน้ำ มักสงบเยือกเย็น สารคัดหลั่งสมบูรณ์";
+                } else if (dayOfWeek === 1 || dayOfWeek === 4) {
+                    canvasChanthasartElement.innerText = "ปถวีธาตุ (ธาตุดิน)";
+                    canvasChanthasartElement.className = "text-base font-bold text-amber-800 dark:text-amber-400 block";
+                    canvasChanthasartDetails.innerText = "คัมภีร์ฉันทศาสตร์ระบุคนเกิดวันจันทร์/พฤหัสบดี เป็นคนธาตุดิน สรีระแข็งแรงมั่นคง ธาตุหนักและหนักแน่น";
+                } else if (dayOfWeek === 2) {
+                    canvasChanthasartElement.innerText = "วาโยธาตุ (ธาตุลม)";
+                    canvasChanthasartElement.className = "text-base font-bold text-amber-600 dark:text-amber-500 block";
+                    canvasChanthasartDetails.innerText = "คัมภีร์ฉันทศาสตร์ระบุคนเกิดวันอังคาร เป็นคนธาตุลม คล่องแคล่ว มีไหวพริบ พึงระวังลมกองหยาบกระทำพิษ";
+                }
+
+                // --- 2. วิเคราะห์ธาตุเจ้าเรือนปฏิสนธิ (คัมภีร์ปฐมจินดา) ---
+                if (bMonth === 1 || bMonth === 2 || bMonth === 3) {
+                    canvasPatomjindaElement.innerText = "เตโชธาตุ (ธาตุไฟ)";
+                    canvasPatomjindaElement.className = "text-base font-bold text-rose-600 dark:text-rose-400 block";
+                    canvasPatomjindaDetails.innerText = "ตามคัมภีร์ปฐมจินดา ปฏิสนธิช่วงเดือน 5, 6, 7 เด่นพัทธปิตตะ อพัทธปิตตะ กำเดา พึงระวังโรคจากความร้อน";
+                } else if (bMonth === 4 || bMonth === 5 || bMonth === 6) {
+                    canvasPatomjindaElement.innerText = "วาโยธาตุ (ธาตุลม)";
+                    canvasPatomjindaElement.className = "text-base font-bold text-amber-600 dark:text-amber-500 block";
+                    canvasPatomjindaDetails.innerText = "ตามคัมภีร์ปฐมจินดา ปฏิสนธิช่วงเดือน 8, 9, 10 เด่นหทัยวาตะ สุมนาวาตะ อังคมังคานุสารีวาตะ ระวังลมอั้น";
+                } else if (bMonth === 7 || bMonth === 8 || bMonth === 9) {
+                    canvasPatomjindaElement.innerText = "อาโปธาตุ (ธาตุน้ำ)";
+                    canvasPatomjindaElement.className = "text-base font-bold text-sky-600 dark:text-sky-400 block";
+                    canvasPatomjindaDetails.innerText = "ตามคัมภีร์ปฐมจินดา ปฏิสนธิช่วงเดือน 11, 12, 1 เด่นเสลด หนอง เลือด พึงระวังโรคทางเสลดและสารคัดหลั่ง";
+                } else if (bMonth === 10 || bMonth === 11 || bMonth === 12) {
+                    canvasPatomjindaElement.innerText = "ปถวีธาตุ (ธาตุดิน)";
+                    canvasPatomjindaElement.className = "text-base font-bold text-amber-950 dark:text-amber-600 block";
+                    canvasPatomjindaDetails.innerText = "ตามคัมภีร์ปฐมจินดา ปฏิสนธิช่วงเดือน 2, 3, 4 เด่นผม ขน เล็บ ฟัน เนื้อ เอ็น กระดูก แข็งแรงทนทาน";
+                }
+
+                // --- 3. ตรีธาตุอายุสมุฏฐาน ---
+                canvasAgeSpan.innerText = `${calculatedAge} ปี`;
+                if (calculatedAge >= 0 && calculatedAge <= 16) {
+                    canvasAgeTypeSpan.innerText = "ปฐมวัย (เสมหะ)";
+                    canvasAgeSamut.innerText = "ปฐมวัย (เสมหะ)";
+                    canvasAgeSamutDetail.innerText = "อายุแรกเกิด - 16 ปี เสมหะเจ้าเรือน กำหนดกำลัง 12 องศา ตั้งเสมหะเป็นต้น วาตะเป็นที่สุด";
+                } else if (calculatedAge > 16 && calculatedAge <= 30) {
+                    canvasAgeTypeSpan.innerText = "มัชฌิมวัย (ปิตตะ)";
+                    canvasAgeSamut.innerText = "มัชฌิมวัย (ปิตตะ)";
+                    canvasAgeSamutDetail.innerText = "อายุ 16 - 30 ปี ปิตตะเจ้าเรือน กำหนดกำลัง 7 องศา ตั้งปิตตะเป็นต้น เสมหะเป็นที่สุด";
+                } else {
+                    canvasAgeTypeSpan.innerText = "ปัจฉิมวัย (วาตะ)";
+                    canvasAgeSamut.innerText = "ปัจฉิมวัย (วาตะ)";
+                    canvasAgeSamutDetail.innerText = "อายุ 30 ปีขึ้นไป วาตะเจ้าเรือน กำหนดกำลัง 10 องศา ตั้งวาตะเป็นต้น ปิตตะเป็นที่สุด";
+                }
+
+            } else {
+                canvasBirthDayText.innerText = "--";
+                document.getElementById('birthLunarConversionText').innerText = "กรุณากรอกวันเกิด...";
+                canvasAgeSpan.innerText = "-- ปี";
+                canvasAgeTypeSpan.innerText = "กรุณากรอกวันเกิด";
+                canvasAgeSamut.innerText = "--";
+                canvasAgeSamutDetail.innerText = "--";
+                canvasChanthasartElement.innerText = "--";
+                canvasChanthasartElement.className = "text-base font-bold text-slate-700 dark:text-slate-300 block";
+                canvasChanthasartDetails.innerText = "กรอก วัน-เดือน-ปีเกิด ทางซ้ายเพื่อคำนวณธาตุเจ้าเรือนตามวันเกิด";
+                canvasPatomjindaElement.innerText = "--";
+                canvasPatomjindaElement.className = "text-base font-bold text-slate-700 dark:text-slate-300 block";
+                canvasPatomjindaDetails.innerText = "กรอก วัน-เดือน-ปีเกิด ทางซ้ายเพื่อคำนวณธาตุเจ้าเรือนปฏิสนธิ";
+            }
+
+            // --- 4. ดัชนีมวลกาย BMI ---
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const canvasBMI = document.getElementById('canvasBMI');
+            const canvasBMIStatus = document.getElementById('canvasBMIStatus');
+            const canvasBMIDisplay = document.getElementById('canvasBMIDisplay');
+
+            if (weight > 0 && height > 0) {
+                const heightM = height / 100;
+                const bmi = (weight / (heightM * heightM)).toFixed(1);
+                canvasBMIDisplay.innerText = bmi;
+
+                let status = "";
+                if (bmi < 18.5) {
+                    status = "น้ำหนักต่ำกว่าเกณฑ์";
+                    canvasBMIStatus.className = "text-base font-semibold text-blue-600 dark:text-blue-400";
+                } else if (bmi >= 18.5 && bmi < 23) {
+                    status = "น้ำหนักปกติตามเกณฑ์ ";
+                    canvasBMIStatus.className = "text-base font-semibold text-emerald-600 dark:text-emerald-400";
+                } else if (bmi >= 23 && bmi < 25) {
+                    status = "เริ่มมีน้ำหนักเกิน (ท้วม)";
+                    canvasBMIStatus.className = "text-base font-semibold text-yellow-600 dark:text-yellow-400";
+                } else if (bmi >= 25 && bmi < 30) {
+                    status = "อ้วนระดับ 1 ";
+                    canvasBMIStatus.className = "text-base font-semibold text-orange-600 dark:text-orange-400";
+                } else {
+                    status = "อ้วนระดับ 2";
+                    canvasBMIStatus.className = "text-base font-semibold text-red-600 dark:text-red-400";
+                }
+                canvasBMI.innerText = bmi;
+                canvasBMIStatus.innerText = status;
+            } else {
+                canvasBMIDisplay.innerText = "--.-";
+                canvasBMI.innerText = "--";
+                canvasBMIStatus.innerText = "กรอกสัดส่วนร่างกายฝั่งซ้ายเพื่อประเมิน";
+                canvasBMIStatus.className = "text-sm text-slate-400 dark:text-slate-500";
+            }
+
+            // --- 5. แปลงพิกัดฤดูขณะเริ่มมีอาการ ---
+            const onsetSolarVal = document.getElementById('onsetSolarDate').value;
+            const onsetLunarConversionText = document.getElementById('onsetLunarConversionText');
+            const canvasSeason = document.getElementById('canvasSeason');
+            const canvasSeasonMini = document.getElementById('canvasSeasonMini');
+            const canvasSeasonDetail = document.getElementById('canvasSeasonDetail');
+
+            if (onsetSolarVal) {
+                const onsetDateObj = parseLocalDate(onsetSolarVal);
+                const lDate = convertSolarToThaiLunar(onsetDateObj);
+                
+                if (lDate) {
+                    let lKhamStr = `${lDate.phase} ${lDate.kham} ค่ำ เดือน ${lDate.month}`;
+                    if (lDate.isSecondMonth8) {
+                        lKhamStr = `${lDate.phase} ${lDate.kham} ค่ำ เดือน 8 (สองหน)`;
+                    }
+                    onsetLunarConversionText.innerText = lKhamStr;
+                    
+                    const onsetAnalysis = analyzeLunarSeason(lDate.phase, lDate.kham, lDate.month, lDate.isSecondMonth8);
+                    canvasSeason.innerText = onsetAnalysis.season;
+                    canvasSeasonMini.innerText = onsetAnalysis.pikkad;
+                    canvasSeasonDetail.innerText = `[จันทรคติ: ${lKhamStr}] : ${onsetAnalysis.desc}`;
+                } else {
+                    onsetLunarConversionText.innerText = "ปีที่เลือกเกินกรอบสูตร (2446-3003)";
+                    canvasSeason.innerText = "--";
+                    canvasSeasonMini.innerText = "--";
+                    canvasSeasonDetail.innerText = "ไม่สามารถคำนวณนอกขอบเขต พ.ศ. 2446 - 3003 ได้";
+                }
+            } else {
+                onsetLunarConversionText.innerText = "กรุณาเลือกวันที่...";
+                canvasSeason.innerText = "--";
+                canvasSeasonMini.innerText = "--";
+                canvasSeasonDetail.innerText = "กรุณาเลือกวันที่สุริยคติฝั่งซ้ายเพื่อคำนวณปฏิทินจันทรคติ";
+            }
+
+            // --- 6. แปลงพิกัดฤดูที่เดินทางมาพบแพทย์ ---
+            const visitSolarVal = document.getElementById('visitSolarDate').value;
+            const visitLunarConversionText = document.getElementById('visitLunarConversionText');
+            const canvasVisitSeason = document.getElementById('canvasVisitSeason');
+            const canvasVisitSeasonMini = document.getElementById('canvasVisitSeasonMini');
+            const canvasVisitSeasonDetail = document.getElementById('canvasVisitSeasonDetail');
+
+            if (visitSolarVal) {
+                const visitDateObj = parseLocalDate(visitSolarVal);
+                const lDate = convertSolarToThaiLunar(visitDateObj);
+                
+                if (lDate) {
+                    let lKhamStr = `${lDate.phase} ${lDate.kham} ค่ำ เดือน ${lDate.month}`;
+                    if (lDate.isSecondMonth8) {
+                        lKhamStr = `${lDate.phase} ${lDate.kham} ค่ำ เดือน 8 (สองหน)`;
+                    }
+                    visitLunarConversionText.innerText = lKhamStr;
+                    
+                    const visitAnalysis = analyzeLunarSeason(lDate.phase, lDate.kham, lDate.month, lDate.isSecondMonth8);
+                    canvasVisitSeason.innerText = visitAnalysis.season;
+                    canvasVisitSeasonMini.innerText = visitAnalysis.pikkad;
+                    canvasVisitSeasonDetail.innerText = `[จันทรคติ: ${lKhamStr}] : ${visitAnalysis.desc}`;
+                } else {
+                    visitLunarConversionText.innerText = "ปีที่เลือกเกินกรอบสูตร (2446-3003)";
+                    canvasVisitSeason.innerText = "--";
+                    canvasVisitSeasonMini.innerText = "--";
+                    canvasVisitSeasonDetail.innerText = "ไม่สามารถคำนวณนอกขอบเขต พ.ศ. 2446 - 3003 ได้";
+                }
+            } else {
+                visitLunarConversionText.innerText = "กรุณาเลือกวันที่...";
+                canvasVisitSeason.innerText = "--";
+                canvasVisitSeasonMini.innerText = "--";
+                canvasVisitSeasonDetail.innerText = "กรุณาเลือกวันที่สุริยคติฝั่งซ้ายเพื่อคำนวณปฏิทินจันทรคติ";
+            }
+
+            // --- 7. กาลสมุฏฐานฤดู ---
+            const timeSelect = document.getElementById('dayTime').value;
+            const canvasTime = document.getElementById('canvasTime');
+            const canvasTimeDetail = document.getElementById('canvasTimeDetail');
+
+            if (timeSelect === "ไม่สัมพันธ์กัน") {
+                canvasTime.innerText = "ไม่สัมพันธ์กัน";
+                canvasTimeDetail.innerText = "อาการลากยาวตลอดวัน หรือไม่เด่นชัดตามกรอบเวลา";
+            } else if (timeSelect === "เสมหะ") {
+                canvasTime.innerText = "ช่วงเสมหะ";
+                canvasTimeDetail.innerText = "ช่วงเช้า/ค่ำ (06-10 / 18-22 น.)";
+            } else if (timeSelect === "ปิตตะ") {
+                canvasTime.innerText = "ช่วงปิตตะ";
+                canvasTimeDetail.innerText = "กลางวัน/ดึก (10-14 / 22-02 น.)";
+            } else {
+                canvasTime.innerText = "ช่วงวาตะ";
+                canvasTimeDetail.innerText = "บ่าย/ย่ำรุ่ง (14-18 / 02-06 น.)";
+            }
+
+            // --- 7.5. ประเทศสมุฏฐาน ---
+            const countrySelect = document.getElementById('countrySamutSelect').value;
+            const canvasCountry = document.getElementById('canvasCountry');
+            const canvasCountryDetail = document.getElementById('canvasCountryDetail');
+
+            if (countrySelect === "1") {
+                canvasCountry.innerText = "ประเทศร้อน (เตโช)";
+                canvasCountryDetail.innerText = "ที่สูง/ชาวเขา เด่นสภาพพยาธิกองไฟเตโช";
+            } else if (countrySelect === "2") {
+                canvasCountry.innerText = "ประเทศอุ่น (อาโป)";
+                canvasCountryDetail.innerText = "ถิ่นน้ำกรวดทราย/ที่ดอน เด่นสมุฏฐานอาโป (ดี/โลหิต)";
+            } else if (countrySelect === "3") {
+                canvasCountry.innerText = "ประเทศเย็น (วาโย)";
+                canvasCountryDetail.innerText = "ถิ่นน้ำฝนเปือกตม/ที่ลุ่มแม่น้ำ เด่นสมุฏฐานวาโย (ลม)";
+            } else if (countrySelect === "4") {
+                canvasCountry.innerText = "ประเทศหนาว (ปถวี)";
+                canvasCountryDetail.innerText = "ถิ่นน้ำเค็มเปือกตม/ชายทะเล เด่นสมุฏฐานปถวี (ดิน)";
+            }
+
+            // --- 8. แสดงมูลเหตุการเกิดโรค 8 ประการ ---
+            const causeCheckboxes = document.querySelectorAll('.cause-checkbox');
+            const canvasCausesContainer = document.getElementById('canvasCausesContainer');
+            canvasCausesContainer.innerHTML = ""; 
+
+            let checkedCauses = [];
+            causeCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    checkedCauses.push(cb.value);
+                    const tag = document.createElement('span');
+                    tag.className = "inline-block bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-400 text-xs px-2.5 py-1.5 rounded-md font-semibold shadow-sm";
+                    tag.innerText = cb.value;
+                    canvasCausesContainer.appendChild(tag);
+                }
+            });
+
+            if (checkedCauses.length === 0) {
+                canvasCausesContainer.innerHTML = `<span class="text-sm text-slate-400 dark:text-slate-500 italic">กรุณาเลือกมูลเหตุเกิดโรคในฝั่งซ้าย...</span>`;
+            }
+        }
+
+        function resetAll() {
+            document.getElementById('birthDay').selectedIndex = 0;
+            document.getElementById('birthMonth').selectedIndex = 0;
+            document.getElementById('birthYear').value = "";
+            document.getElementById('weight').value = "";
+            document.getElementById('height').value = "";
+            
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            
+            document.getElementById('onsetSolarDate').value = todayStr;
+            document.getElementById('visitSolarDate').value = todayStr;
+            document.getElementById('dayTime').selectedIndex = 2; 
+            document.getElementById('countrySamutSelect').selectedIndex = 2; 
+
+            const causeCheckboxes = document.querySelectorAll('.cause-checkbox');
+            causeCheckboxes.forEach(cb => cb.checked = false);
+
+            calculateRealTime();
+        }
+
+        function copyToClipboard() {
+            const birthDayVal = document.getElementById('canvasBirthDayText').innerText;
+            const ageVal = document.getElementById('canvasAge').innerText;
+            const ageSamutVal = document.getElementById('canvasAgeSamut').innerText;
+            const chanthasartVal = document.getElementById('canvasChanthasartElement').innerText;
+            const patomjindaVal = document.getElementById('canvasPatomjindaElement').innerText;
+            
+            const seasonVal = document.getElementById('canvasSeason').innerText;
+            const seasonPikkad = document.getElementById('canvasSeasonMini').innerText;
+            const seasonDetail = document.getElementById('canvasSeasonDetail').innerText;
+            
+            const visitSeasonVal = document.getElementById('canvasVisitSeason').innerText;
+            const visitSeasonPikkad = document.getElementById('canvasVisitSeasonMini').innerText;
+            const visitSeasonDetail = document.getElementById('canvasVisitSeasonDetail').innerText;
+            
+            const timeVal = document.getElementById('canvasTime').innerText;
+            const countryVal = document.getElementById('canvasCountry').innerText;
+            const countryDetailVal = document.getElementById('canvasCountryDetail').innerText;
+            const bmiVal = document.getElementById('canvasBMIDisplay').innerText;
+            const bmiStatus = document.getElementById('canvasBMIStatus').innerText;
+
+            const causeCheckboxes = document.querySelectorAll('.cause-checkbox');
+            let causesList = [];
+            causeCheckboxes.forEach(cb => {
+                if (cb.checked) causesList.push(cb.value);
+            });
+            const causesStr = causesList.length > 0 ? causesList.join(", ") : "ไม่มีการระบุ";
+
+            const summaryText = `[รายงานการประเมินเคสแพทย์แผนไทยประยุกต์ - มหาพิกัดฤดู 3 พิสดาร]\n` +
+                                `-------------------------------------------\n` +
+                                `• ข้อมูลคนไข้: ${birthDayVal} (อายุ ${ageVal})\n` +
+                                `• อายุสมุฏฐาน: ${ageSamutVal}\n` +
+                                `• ประเทศสมุฏฐาน (ถิ่นที่อยู่อาศัย): ${countryVal} (${countryDetailVal})\n` +
+                                `• ธาตุเจ้าเรือน (ตามวัน - ฉันทศาสตร์): ${chanthasartVal}\n` +
+                                `• ธาตุเจ้าเรือนปฏิสนธิ (ตามเดือน - ปฐมจินดา): ${patomjindaVal}\n` +
+                                `• ฤดูสมุฏฐานย่อยที่เกิดโรค (พิกัด 40 วัน): ${seasonVal} (${seasonPikkad})\n` +
+                                `  [รายละเอียด]: ${seasonDetail}\n` +
+                                `• ฤดูสมุฏฐานย่อยที่พบแพทย์ (พิกัด 40 วัน): ${visitSeasonVal} (${visitSeasonPikkad})\n` +
+                                `  [รายละเอียด]: ${visitSeasonDetail}\n` +
+                                `• กาลสมุฏฐานที่เกิดอาการเด่นชัด: ${timeVal}\n` +
+                                `• ดัชนีมวลกาย (BMI): ${bmiVal} kg/m² (${bmiStatus}) [อ้างอิง: กรมอนามัย กระทรวงสาธารณสุข]\n` +
+                                `• มูลเหตุเกิดโรคเด่นชัด (8 ประการ): ${causesStr}\n` +
+                                `-------------------------------------------\n` +
+                                `*สรุปบันทึกเคสเวชกรรมไทย อ้างอิงตามคัมภีร์หลักเวชกรรมและฉันทศาสตร์`;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = summaryText;
+            textarea.style.position = 'fixed'; 
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast();
+                } else {
+                    prompt("บราวเซอร์อาจป้องกันสิทธิ์การคัดลอก คุณสามารถกดคัดลอกจากกล่องด้านล่างนี้ได้เลยครับ:", summaryText);
+                }
+            } catch (err) {
+                prompt("ไม่สามารถคัดลอกอัตโนมัติได้ สามารถกดคัดลอกจากกล่องด้านล่างนี้ได้เลยครับ:", summaryText);
+            }
+
+            document.body.removeChild(textarea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('copyToast');
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
